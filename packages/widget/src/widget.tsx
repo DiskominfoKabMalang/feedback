@@ -120,7 +120,9 @@ function FeedbackWidget({
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [email, setEmail] = useState('')
-  const [demographics, setDemographics] = useState<Record<string, string>>({})
+  const [demographics, setDemographics] = useState<
+    Record<string, string | string[]>
+  >({})
 
   // Session tracking
   const [sessionId] = useState(() => {
@@ -227,25 +229,34 @@ function FeedbackWidget({
       timing?: PerformanceNavigationTiming
       getEntriesByType?: (
         type: string
-      ) => Array<{
-        startTime?: number
-        value?: number
-        processingStart?: number
-      }>
+      ) => Array<
+        | PerformanceEntry
+        | { startTime?: number; value?: number; processingStart?: number }
+      >
     }
     const navigation =
-      perfData.timing || perfData.getEntriesByType?.('navigation')?.[0]
+      perfData.timing ||
+      (perfData.getEntriesByType?.('navigation')?.[0] as
+        | PerformanceNavigationTiming
+        | undefined)
+
+    const layoutShifts = perfData.getEntriesByType?.('layout-shift') || []
+    const cls = layoutShifts.reduce((sum: number, entry) => {
+      return sum + ((entry as { value?: number }).value || 0)
+    }, 0)
 
     return {
-      lcp: perfData.getEntriesByType?.('largest-contentful-paint')?.[0]
-        ?.startTime,
-      cls: perfData
-        .getEntriesByType?.('layout-shift')
-        ?.reduce(
-          (sum: number, entry: { value: number }) => sum + entry.value,
-          0
-        ),
-      fid: perfData.getEntriesByType?.('first-input')?.[0]?.processingStart,
+      lcp: (
+        perfData.getEntriesByType?.('largest-contentful-paint')?.[0] as {
+          startTime?: number
+        }
+      )?.startTime,
+      cls,
+      fid: (
+        perfData.getEntriesByType?.('first-input')?.[0] as {
+          processingStart?: number
+        }
+      )?.processingStart,
       load_time: navigation?.loadEventEnd - navigation?.navigationStart,
     }
   }
@@ -882,11 +893,11 @@ async function fetchConfig(
 ): Promise<WidgetConfig> {
   try {
     const response = await fetch(
-      `${apiEndpoint}/api/v1/widget/config?projectId=${projectId}`
+      `${apiEndpoint}/api/v1/widget/config?project_id=${projectId}`
     )
     if (response.ok) {
       const data = await response.json()
-      return data.config || {}
+      return data || {}
     }
   } catch (error) {
     console.warn('[FeedbackWidget] Could not fetch config, using defaults')

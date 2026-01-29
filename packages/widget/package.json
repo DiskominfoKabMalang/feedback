@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "python3 -m http.server 5500 --directory ."
   },
   "dependencies": {
     "preact": "^10.19.3"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.8.1",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.3.3",
     "vite": "^5.0.11"
   }

@@ -331,14 +331,6 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     }))
   }
 
-  // Update flow
-  const updateFlow = (updates: Partial<WidgetFlow>) => {
-    setConfig((prev) => ({
-      ...prev,
-      flow: { ...prev.flow, ...updates },
-    }))
-  }
-
   // Update rating step
   const updateRatingStep = (updates: Partial<RatingStepConfig>) => {
     setConfig((prev) => ({
