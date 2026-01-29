@@ -1,22 +1,25 @@
-import { cookies } from 'next/headers'
-import { verifyToken } from '@/lib/auth'
+import { auth } from '@/auth'
 import { getUserPermissions, getUserRoles } from '@/lib/auth'
 
 /**
- * Server-side utility to get the current authenticated user from the JWT token.
+ * Server-side utility to get the current authenticated user from NextAuth session.
  *
- * @returns The user data from the token or null if not authenticated
+ * @returns The user data from the session or null if not authenticated
  */
 export async function getServerUser() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('auth_token')?.value
+  const session = await auth()
 
-  if (!token) {
+  if (!session?.user) {
     return null
   }
 
-  const payload = await verifyToken(token)
-  return payload
+  // Transform NextAuth session to match the expected user structure
+  return {
+    userId: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    permissions: session.user.permissions || [],
+  }
 }
 
 /**

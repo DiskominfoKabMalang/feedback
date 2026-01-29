@@ -90,6 +90,32 @@ const defaultPermissions = [
     action: 'delete',
   },
 
+  // Resource Management
+  {
+    name: 'View Resources',
+    slug: 'resources.read',
+    resource: 'resources',
+    action: 'read',
+  },
+  {
+    name: 'Create Resources',
+    slug: 'resources.create',
+    resource: 'resources',
+    action: 'create',
+  },
+  {
+    name: 'Update Resources',
+    slug: 'resources.update',
+    resource: 'resources',
+    action: 'update',
+  },
+  {
+    name: 'Delete Resources',
+    slug: 'resources.delete',
+    resource: 'resources',
+    action: 'delete',
+  },
+
   // Task Management
   { name: 'View Tasks', slug: 'tasks.read', resource: 'tasks', action: 'read' },
   {

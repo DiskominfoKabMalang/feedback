@@ -2,22 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { users, userRoles, roles } from '@/db/schema'
 import { eq, like, or } from 'drizzle-orm'
-import { verifyToken, hashPassword } from '@/lib/auth'
+import { hashPassword } from '@/lib/auth/password'
+import { requireServerPermission } from '@/lib/rbac/server'
 
-// Get all users
+// Runtime configuration: explicitly use Node.js runtime
+export const runtime = 'nodejs'
+
+/**
+ * GET /api/admin/users
+ * Get all users with their roles
+ */
 export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await req.cookies
-    const token = cookieStore.get('auth_token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    await requireServerPermission('users.read')
 
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search')
@@ -64,26 +61,26 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Get users error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      {
+        status:
+          error instanceof Error && error.message.includes('Permission denied')
+            ? 403
+            : 500,
+      }
     )
   }
 }
 
-// Create new user
+/**
+ * POST /api/admin/users
+ * Create a new user
+ */
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await req.cookies
-    const token = cookieStore.get('auth_token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    await requireServerPermission('users.create')
 
     const body = await req.json()
     const { email, name, username, password } = body
@@ -150,8 +147,15 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Create user error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      {
+        status:
+          error instanceof Error && error.message.includes('Permission denied')
+            ? 403
+            : 500,
+      }
     )
   }
 }

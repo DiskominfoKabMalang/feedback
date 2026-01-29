@@ -2,27 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { users } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { verifyToken, hashPassword } from '@/lib/auth'
+import { hashPassword } from '@/lib/auth/password'
+import { requireServerPermission, getServerUser } from '@/lib/rbac/server'
 
-// Get single user
+// Runtime configuration: explicitly use Node.js runtime
+export const runtime = 'nodejs'
+
+/**
+ * GET /api/admin/users/[id]
+ * Get a single user by ID
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await requireServerPermission('users.read')
+
     const { id } = await params
-    const cookieStore = await req.cookies
-    const token = cookieStore.get('auth_token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const user = await db.select().from(users).where(eq(users.id, id)).limit(1)
 
     if (user.length === 0) {
@@ -37,31 +34,31 @@ export async function GET(
   } catch (error) {
     console.error('Get user error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      {
+        status:
+          error instanceof Error && error.message.includes('Permission denied')
+            ? 403
+            : 500,
+      }
     )
   }
 }
 
-// Update user
+/**
+ * PUT /api/admin/users/[id]
+ * Update a user by ID
+ */
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await requireServerPermission('users.update')
+
     const { id } = await params
-    const cookieStore = await req.cookies
-    const token = cookieStore.get('auth_token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const body = await req.json()
     const { email, name, username, password } = body
 
@@ -131,30 +128,32 @@ export async function PUT(
   } catch (error) {
     console.error('Update user error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      {
+        status:
+          error instanceof Error && error.message.includes('Permission denied')
+            ? 403
+            : 500,
+      }
     )
   }
 }
 
-// Delete user
+/**
+ * DELETE /api/admin/users/[id]
+ * Delete a user by ID
+ */
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await requireServerPermission('users.delete')
+
     const { id } = await params
-    const cookieStore = await req.cookies
-    const token = cookieStore.get('auth_token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    const currentUser = await getServerUser()
 
     // Check if user exists
     const existingUser = await db
@@ -168,7 +167,7 @@ export async function DELETE(
     }
 
     // Prevent deleting the current user
-    if (payload.userId === id) {
+    if (currentUser?.userId === id) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 403 }
@@ -181,8 +180,15 @@ export async function DELETE(
   } catch (error) {
     console.error('Delete user error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      {
+        status:
+          error instanceof Error && error.message.includes('Permission denied')
+            ? 403
+            : 500,
+      }
     )
   }
 }

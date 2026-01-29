@@ -28,6 +28,7 @@ A comprehensive feedback collection and analytics platform built with Next.js 16
 - [Features](#features)
 - [Project Structure](#project-structure)
 - [Available Scripts](#available-scripts)
+- [Widget Build](#widget-build)
 - [RBAC System](#rbac-system)
 - [API Endpoints](#api-endpoints)
 - [Troubleshooting](#troubleshooting)
@@ -355,6 +356,82 @@ pnpm db:assign-admin # Assign admin role to user
 pnpm docker:up       # Start PostgreSQL container
 pnpm docker:down     # Stop PostgreSQL container
 pnpm docker:logs      # View PostgreSQL logs
+```
+
+### Widget
+
+```bash
+# Navigate to widget package
+cd packages/widget
+
+# Install dependencies
+pnpm install
+
+# Development mode
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+```
+
+## Widget Build
+
+The embeddable feedback widget is built with **Preact** for minimal bundle size.
+
+### Quick Start
+
+```bash
+cd packages/widget
+pnpm install
+pnpm build
+```
+
+### Widget Features
+
+- 📦 **Lightweight** - ~30KB gzipped
+- 🎨 **Customizable** - Theme, colors, position, behavior
+- 🧠 **Logic Builder** - Dynamic forms based on ratings
+- 📱 **Responsive** - Works on all devices
+- 🌙 **Dark Mode** - Automatic support
+
+### Installation for End Users
+
+```html
+<script src="https://your-domain.com/widget.js"></script>
+<script>
+  FeedbackWidget.init({
+    projectId: 'YOUR_PROJECT_ID',
+  })
+</script>
+```
+
+### Development
+
+For full widget build documentation, see **[docs/WIDGET_BUILD.md](docs/WIDGET_BUILD.md)**
+
+Topics covered:
+
+- Development setup
+- Production build
+- Deployment options (CDN, Next.js, standalone)
+- Integration guide (HTML, WordPress, Shopify, React)
+- Troubleshooting
+
+### Widget Structure
+
+```
+packages/widget/
+├── src/
+│   ├── widget.tsx      # Main widget component
+│   ├── widget.css      # Scoped widget styles
+│   └── types.ts        # TypeScript definitions
+├── dist/               # Build output
+├── package.json
+├── vite.config.ts
+└── tsconfig.json
 ```
 
 ## RBAC System
