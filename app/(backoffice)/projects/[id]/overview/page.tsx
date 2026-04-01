@@ -1,9 +1,9 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
-import { MessageSquare, Star, TrendingUp, Users } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProjectStats } from '@/components/projects/project-stats'
+import { OverviewStats } from './overview-stats'
 import { RecentFeedbacks } from '@/components/projects/recent-feedbacks'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TrendingUp } from 'lucide-react'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -19,55 +19,23 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Feedback
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <ProjectStats projectId={id} type="total" />
-          </CardContent>
-        </Card>
+      {/* Stats Cards - Single component that fetches once */}
+      <OverviewStats projectId={id} />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <ProjectStats projectId={id} type="rating" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">NPS Score</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <ProjectStats projectId={id} type="nps" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <ProjectStats projectId={id} type="month" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Feedbacks */}
-      <Card>
+      {/* Recent Feedback */}
+      <Card className="border-muted/50">
         <CardHeader>
-          <CardTitle>Recent Feedback</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Feedback</CardTitle>
+              <p className="text-muted-foreground text-sm mt-1">
+                See what your users are saying
+              </p>
+            </div>
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <RecentFeedbacks projectId={id} limit={5} />

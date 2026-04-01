@@ -8,6 +8,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
+import { db } from '@/db'
+import { projects } from '@/db/schema'
+import { desc, eq } from 'drizzle-orm'
 
 export default async function BackofficeLayout({
   children,
@@ -31,21 +35,42 @@ export default async function BackofficeLayout({
   const userPermissions =
     (session.user as { permissions?: string[] })?.permissions || []
 
+  // Fetch user projects for sidebar
+  const userProjects = await db
+    .select({
+      id: projects.id,
+      name: projects.name,
+      slug: projects.slug,
+    })
+    .from(projects)
+    .where(eq(projects.ownerId, session.user.id))
+    .orderBy(desc(projects.createdAt))
+    .limit(5)
+
   return (
     <SidebarProvider>
-      <AppSidebar userPermissions={userPermissions} />
+      <AppSidebar
+        userPermissions={userPermissions}
+        projects={userProjects.map((p) => ({
+          name: p.name,
+          url: `/projects/${p.id}`,
+          slug: p.slug,
+        }))}
+      />
       <SidebarInset className="!mt-0 [&_main]:!mt-0">
-        <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 backdrop-blur">
-          <div className="flex items-center gap-2">
+        <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b backdrop-blur">
+          <div className="flex w-full items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
-            <h1 className="text-lg font-semibold">Feedback SaaS</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <HeaderNotifications />
-            <HeaderUser user={userDisplay} />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <h1 className="text-base font-semibold">Feedback SaaS</h1>
+
+            <div className="ml-auto flex items-center gap-2">
+              <HeaderNotifications />
+              <HeaderUser user={userDisplay} />
+            </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 bg-slate-50 p-4">
+        <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-6 pt-0">
           {children}
         </div>
       </SidebarInset>

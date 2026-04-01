@@ -20,19 +20,20 @@ export function NavSecondary({
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   return (
-    <SidebarGroup {...props}>
+    <SidebarGroup className="py-2" {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                size="sm"
-                className="h-9 py-2 data-[active=true]:bg-primary/10 data-[active=true]:text-primary hover:bg-primary/5"
-              >
-                <a href={item.url} className="gap-3">
-                  <item.icon className="h-4 w-4" />
-                  <span className="text-xs font-medium">{item.title}</span>
+              <SidebarMenuButton asChild size="sm">
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="gap-3"
+                >
+                  <item.icon className="h-4 w-4 text-sidebar-foreground/60" />
+                  <span className="text-sm font-medium">{item.title}</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

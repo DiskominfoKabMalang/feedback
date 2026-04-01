@@ -1,11 +1,25 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Merriweather, Fira_Code } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 
-const inter = Inter({
+const interSans = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
+  display: 'swap',
+})
+
+const merriweatherSerif = Merriweather({
+  variable: '--font-merriweather',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '700'],
+})
+
+const firaMono = Fira_Code({
+  variable: '--font-fira-code',
+  subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -80,12 +94,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${interSans.variable} ${merriweatherSerif.variable} ${firaMono.variable}`}
+    >
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          forcedTheme="light"
           disableTransitionOnChange
         >
           {children}

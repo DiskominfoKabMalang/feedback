@@ -167,13 +167,37 @@ function FeedbackWidget({
     localStorage.setItem('fw_visited_before', 'true')
   }, [])
 
-  // Get current logic rule based on rating
+  // Get current logic rule based on rating (with legacy field support)
   const currentRule =
     selectedRating !== null && config.flow?.feedback_step?.logic_rules
-      ? config.flow.feedback_step.logic_rules.find((r) =>
-          r.trigger_ratings.includes(selectedRating)
-        )
+      ? config.flow.feedback_step.logic_rules.find((r) => {
+          // Support both new (trigger_ratings) and legacy (rating_group) field names
+          const ratings =
+            r.trigger_ratings ||
+            (r as FeedbackLogicRule & { rating_group?: number[] })
+              .rating_group ||
+            []
+          return ratings.includes(selectedRating)
+        })
       : null
+
+  // Normalize current rule fields (support legacy field names)
+  const normalizedRule = currentRule
+    ? {
+        ...currentRule,
+        // Legacy: tags → New: tags_options
+        tags_options:
+          currentRule.tags_options ||
+          (currentRule as FeedbackLogicRule & { tags?: string[] }).tags ||
+          [],
+        // Legacy: message_label → New: placeholder
+        placeholder:
+          currentRule.placeholder ||
+          (currentRule as FeedbackLogicRule & { message_label?: string })
+            .message_label ||
+          'Share your thoughts...',
+      }
+    : null
 
   // Reset form
   const resetForm = () => {
@@ -196,9 +220,13 @@ function FeedbackWidget({
 
   const handleRatingClick = (rating: number) => {
     setSelectedRating(rating)
-    if (config.flow?.feedback_step?.enabled) {
+
+    const feedbackEnabled = config.flow?.feedback_step?.enabled !== false
+    const demographicsEnabled = config.flow?.demographics_step?.enabled === true
+
+    if (feedbackEnabled) {
       setStep('feedback')
-    } else if (config.flow?.demographics_step?.enabled) {
+    } else if (demographicsEnabled) {
       setStep('demographics')
     } else {
       submitFeedback(rating)
@@ -206,7 +234,8 @@ function FeedbackWidget({
   }
 
   const handleFeedbackSubmit = () => {
-    if (config.flow?.demographics_step?.enabled) {
+    const demographicsEnabled = config.flow?.demographics_step?.enabled === true
+    if (demographicsEnabled) {
       setStep('demographics')
     } else {
       submitFeedback(selectedRating!)
@@ -312,7 +341,7 @@ function FeedbackWidget({
         answers: {
           tags: selectedTags.length > 0 ? selectedTags : undefined,
           comment: comment.trim() || undefined,
-          email: currentRule?.collect_email
+          email: normalizedRule?.collect_email
             ? email.trim() || undefined
             : undefined,
           user_info: config.flow?.demographics_step?.enabled
@@ -703,9 +732,9 @@ function FeedbackWidget({
       )
     }
 
-    if (step === 'feedback' && currentRule) {
+    if (step === 'feedback' && normalizedRule) {
       const canSubmit =
-        currentRule.allow_skip_comment ||
+        normalizedRule.allow_skip_comment ||
         comment.trim().length > 0 ||
         selectedTags.length > 0
 
@@ -715,42 +744,43 @@ function FeedbackWidget({
             {renderSelectedRating()}
           </div>
 
-          {currentRule.subtitle && (
-            <p class="fw-subtitle">{currentRule.subtitle}</p>
+          {normalizedRule.subtitle && (
+            <p class="fw-subtitle">{normalizedRule.subtitle}</p>
           )}
 
-          <h4 class="fw-title">{currentRule.title}</h4>
+          <h4 class="fw-title">{normalizedRule.title}</h4>
 
           <textarea
             class="fw-textarea"
-            placeholder={currentRule.placeholder || 'Share your thoughts...'}
+            placeholder={normalizedRule.placeholder || 'Share your thoughts...'}
             value={comment}
             onInput={(e) => setComment((e.target as HTMLTextAreaElement).value)}
             rows={3}
           />
 
-          {currentRule.tags_options && currentRule.tags_options.length > 0 && (
-            <div class="fw-tags">
-              {currentRule.tags_options.map((tag) => (
-                <button
-                  type="button"
-                  key={tag}
-                  class={`fw-tag-option ${selectedTags.includes(tag) ? 'fw-active' : ''}`}
-                  onClick={() => {
-                    if (selectedTags.includes(tag)) {
-                      setSelectedTags(selectedTags.filter((t) => t !== tag))
-                    } else {
-                      setSelectedTags([...selectedTags, tag])
-                    }
-                  }}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          )}
+          {normalizedRule.tags_options &&
+            normalizedRule.tags_options.length > 0 && (
+              <div class="fw-tags">
+                {normalizedRule.tags_options.map((tag: string) => (
+                  <button
+                    type="button"
+                    key={tag}
+                    class={`fw-tag-option ${selectedTags.includes(tag) ? 'fw-active' : ''}`}
+                    onClick={() => {
+                      if (selectedTags.includes(tag)) {
+                        setSelectedTags(selectedTags.filter((t) => t !== tag))
+                      } else {
+                        setSelectedTags([...selectedTags, tag])
+                      }
+                    }}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {currentRule.collect_email && (
+          {normalizedRule.collect_email && (
             <input
               type="email"
               class="fw-input"

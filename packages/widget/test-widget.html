@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Widget Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .info {
+      background: #f3f4f6;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .info code {
+      background: #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .warning {
+      background: #fef3c7;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #f59e0b;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Widget Development Test</h1>
+
+  <div class="warning">
+    <strong>⚠️ Update URLs:</strong> Replace <code>10.10.100.20</code> with your actual IP if different.
+  </div>
+
+  <div class="info">
+    <h3>Current Setup:</h3>
+    <p><strong>Widget:</strong> <code>http://10.10.100.20:5173/src/widget.tsx</code></p>
+    <p><strong>API:</strong> <code>http://10.10.100.20:3001</code></p>
+    <p><strong>Mode:</strong> Development (Hot Reload enabled)</p>
+  </div>
+
+  <h2>Testing Instructions:</h2>
+  <ol>
+    <li>Make sure Vite dev server is running: <code>cd packages/widget && pnpm dev</code></li>
+    <li>Make sure API server is running: <code>pnpm dev</code> (in root)</li>
+    <li>Check browser console for any errors</li>
+    <li>Look for the Feedback button (💬) in the bottom-right corner</li>
+    <li>Click and test the widget flow</li>
+  </ol>
+
+  <hr>
+
+  <h2>Test Content</h2>
+  <p>This is a sample website content. The widget should appear as a floating button.</p>
+
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+
+  <button>Test Button</button>
+  <input type="text" placeholder="Test input" />
+  <select>
+    <option>Test select</option>
+  </select>
+
+  <!-- Load Widget from Vite Dev Server -->
+  <script type="module" src="http://10.10.100.20:5173/src/widget.tsx"></script>
+
+  <!-- Initialize Widget with auto-init data attributes -->
+  <script data-feedback-widget
+          data-project-id="test-project-id"
+          data-api-endpoint="http://10.10.100.20:3001"
+          data-debug="true"></script>
+
+  <script type="module">
+    // Get project ID from URL params or use default
+    const urlParams = new URLSearchParams(window.location.search)
+    const projectId = urlParams.get('projectId') || 'test-project-id'
+    const debug = urlParams.get('debug') !== 'false'
+
+    console.log('[Test Page] Initializing widget...')
+    console.log('[Test Page] Project ID:', projectId)
+    console.log('[Test Page] Debug:', debug)
+    console.log('[Test Page] API Endpoint:', 'http://10.10.100.20:3001')
+
+    // Initialize with debug mode (after widget loads)
+    setTimeout(() => {
+      if (window.FeedbackWidget) {
+        console.log('[Test Page] FeedbackWidget found, calling init...')
+        FeedbackWidget.init({
+          projectId: projectId,
+          apiEndpoint: 'http://10.10.100.20:3001',
+          debug: debug,
+        })
+      } else {
+        console.warn('[Test Page] FeedbackWidget not found. Check if script loaded correctly.')
+      }
+    }, 500)
+  </script>
+</body>
+</html>

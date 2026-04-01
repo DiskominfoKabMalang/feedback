@@ -1,105 +1,89 @@
 import 'dotenv/config'
 import { db } from '@/db'
 import { resources } from '@/db/schema'
-
-/**
- * Seed default resources for the RBAC system.
- *
- * Run with: npx tsx db/seed-resources.ts
- */
+import { eq } from 'drizzle-orm'
 
 const defaultResources = [
   {
-    name: 'Dashboard',
-    identifier: 'dashboard',
-    description: 'Main dashboard and analytics',
-  },
-  {
     name: 'Users',
     identifier: 'users',
-    description: 'User management and authentication',
+    description: 'User accounts and profiles management',
   },
   {
     name: 'Roles',
     identifier: 'roles',
-    description: 'Role definitions and management',
+    description: 'User roles and role assignments',
   },
   {
     name: 'Permissions',
     identifier: 'permissions',
-    description: 'Permission definitions and management',
+    description: 'System permissions and access control',
   },
   {
-    name: 'Tasks',
-    identifier: 'tasks',
-    description: 'Task and project management',
+    name: 'Resources',
+    identifier: 'resources',
+    description: 'System resources for RBAC',
   },
   {
     name: 'Projects',
     identifier: 'projects',
-    description: 'Project management and tracking',
+    description: 'Feedback projects management',
   },
   {
-    name: 'Posts',
-    identifier: 'posts',
-    description: 'Blog posts and content management',
+    name: 'Feedbacks',
+    identifier: 'feedbacks',
+    description: 'User feedback entries',
+  },
+  {
+    name: 'Webhooks',
+    identifier: 'webhooks',
+    description: 'Webhook integrations',
+  },
+  {
+    name: 'Dashboard',
+    identifier: 'dashboard',
+    description: 'Main dashboard access',
   },
   {
     name: 'Settings',
     identifier: 'settings',
-    description: 'System settings and configuration',
-  },
-  {
-    name: 'Reports',
-    identifier: 'reports',
-    description: 'System reports and analytics',
-  },
-  {
-    name: 'Audit Logs',
-    identifier: 'audit',
-    description: 'System audit logs and history',
-  },
-  {
-    name: 'System',
-    identifier: 'system',
-    description: 'System-level operations and maintenance',
+    description: 'Application settings',
   },
 ]
 
-async function seed() {
-  console.log('🌱 Starting Resources seed...')
+async function seedResources() {
+  console.log('🌱 Seeding default resources...')
 
   try {
-    // Insert resources
-    console.log('📝 Inserting resources...')
-    const insertedResources = await db
-      .insert(resources)
-      .values(defaultResources)
-      .onConflictDoNothing()
-      .returning()
+    for (const resource of defaultResources) {
+      // Check if resource already exists
+      const existing = await db
+        .select()
+        .from(resources)
+        .where(eq(resources.identifier, resource.identifier))
+        .limit(1)
 
-    console.log(`✅ Inserted ${insertedResources.length} resources`)
-    console.log('\n📋 Resources created:')
-    insertedResources.forEach((resource) => {
-      console.log(`  - ${resource.name} (${resource.identifier})`)
-    })
+      if (existing.length > 0) {
+        console.log(`  ✓ Resource "${resource.identifier}" already exists`)
+        continue
+      }
 
-    console.log('\n🎉 Resources seed completed successfully!')
-    console.log('\n💡 Next steps:')
-    console.log('  1. Update permissions to reference these resources')
-    console.log('  2. Use the Resources management page to add more resources')
+      await db.insert(resources).values(resource)
+      console.log(
+        `  + Created resource: ${resource.name} (${resource.identifier})`
+      )
+    }
+
+    console.log('\n✅ Resources seeded successfully!')
   } catch (error) {
     console.error('❌ Error seeding resources:', error)
     process.exit(1)
   }
 }
 
-seed()
-  .then(() => {
-    console.log('\n✅ Done!')
-    process.exit(0)
-  })
+seedResources()
+  .then(() => process.exit(0))
   .catch((error) => {
-    console.error('❌ Fatal error:', error)
+    console.error(error)
     process.exit(1)
   })

@@ -9,11 +9,18 @@ import {
 } from '@/components/ui/card'
 import { ProjectsTable } from '@/components/projects/projects-table'
 import { CreateProjectDialog } from '@/components/projects/create-project-dialog'
-import { Suspense } from 'react'
+import { db } from '@/db'
+import { projects, feedbacks } from '@/db/schema'
+import { eq, desc, inArray, sql } from 'drizzle-orm'
 
-interface ProjectData {
+interface ProjectWithStats {
+  id: string
+  name: string
+  slug: string
+  tier: string
   feedbackCount: number
   avgRating: number | null
+  createdAt: Date
 }
 
 export default async function ProjectsPage() {
@@ -23,12 +30,87 @@ export default async function ProjectsPage() {
     redirect('/login')
   }
 
+  // Get projects first (fast, indexed query)
+  const userProjects = await db
+    .select({
+      id: projects.id,
+      name: projects.name,
+      slug: projects.slug,
+      tier: projects.tier,
+      createdAt: projects.createdAt,
+    })
+    .from(projects)
+    .where(eq(projects.ownerId, session.user.id))
+    .orderBy(desc(projects.createdAt))
+
+  // Get stats in a single query using WHERE IN (much faster than subqueries per row)
+  const projectIds = userProjects.map((p) => p.id)
+
+  let feedbackStats: Array<{
+    projectId: string
+    count: number
+    avgRating: number | null
+  }> = []
+
+  if (projectIds.length > 0) {
+    // Use Drizzle ORM for cleaner query
+    const stats = await db
+      .select({
+        projectId: feedbacks.projectId,
+        count: sql<number>`COUNT(*)`.mapWith(Number),
+        avgRating: sql<number>`COALESCE(AVG(${feedbacks.rating}), 0)`.mapWith(
+          Number
+        ),
+      })
+      .from(feedbacks)
+      .where(inArray(feedbacks.projectId, projectIds))
+      .groupBy(feedbacks.projectId)
+
+    feedbackStats = stats
+  }
+
+  // Create a map for quick lookup
+  const statsMap = new Map(
+    feedbackStats.map((s) => [
+      s.projectId,
+      {
+        feedbackCount: s.count,
+        avgRating: s.avgRating === 0 ? null : s.avgRating,
+      },
+    ])
+  )
+
+  // Merge projects with stats
+  const projectsWithStats: ProjectWithStats[] = userProjects.map((p) => {
+    const stats = statsMap.get(p.id)
+    return {
+      ...p,
+      feedbackCount: stats?.feedbackCount || 0,
+      avgRating: stats?.avgRating,
+    }
+  })
+
+  // Calculate stats from the already fetched data
+  const totalProjects = projectsWithStats.length
+  const totalFeedback = projectsWithStats.reduce(
+    (sum, p) => sum + (p.feedbackCount || 0),
+    0
+  )
+  const projectsWithRatings = projectsWithStats.filter(
+    (p) => p.avgRating !== null && p.avgRating > 0
+  )
+  const avgRating =
+    projectsWithRatings.length > 0
+      ? projectsWithRatings.reduce((sum, p) => sum + (p.avgRating || 0), 0) /
+        projectsWithRatings.length
+      : 0
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
           <p className="text-muted-foreground">
             Manage your feedback projects and widgets
           </p>
@@ -38,54 +120,34 @@ export default async function ProjectsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+        <div className="bg-card rounded-xl border p-6">
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm font-medium">
               Total Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Suspense
-              fallback={
-                <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-              }
-            >
-              <TotalProjects userId={session.user.id} />
-            </Suspense>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <p className="mt-3 text-3xl font-bold">{totalProjects}</p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+        <div className="bg-card rounded-xl border p-6">
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm font-medium">
               Total Feedback
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Suspense
-              fallback={
-                <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-              }
-            >
-              <TotalFeedback userId={session.user.id} />
-            </Suspense>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <p className="mt-3 text-3xl font-bold">{totalFeedback}</p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Suspense
-              fallback={
-                <div className="h-8 w-16 animate-pulse bg-muted rounded" />
-              }
-            >
-              <AvgRating userId={session.user.id} />
-            </Suspense>
-          </CardContent>
-        </Card>
+        <div className="bg-card rounded-xl border p-6">
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm font-medium">
+              Avg Rating
+            </p>
+          </div>
+          <p className="mt-3 text-3xl font-bold">
+            {avgRating > 0 ? avgRating.toFixed(1) : '-'}
+          </p>
+        </div>
       </div>
 
       {/* Projects Table */}
@@ -97,87 +159,9 @@ export default async function ProjectsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<ProjectsTableSkeleton />}>
-            <ProjectsTable userId={session.user.id} />
-          </Suspense>
+          <ProjectsTable projects={projectsWithStats} />
         </CardContent>
       </Card>
-    </div>
-  )
-}
-
-async function TotalProjects({ userId }: { userId: string }) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/projects`,
-    {
-      cache: 'no-store',
-      headers: {
-        cookie: `next-auth.session-token=${userId}`,
-      },
-    }
-  )
-  const { data } = await response.json()
-
-  return <div className="text-2xl font-bold">{data?.length || 0}</div>
-}
-
-async function TotalFeedback({ userId }: { userId: string }) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/projects`,
-    {
-      cache: 'no-store',
-      headers: {
-        cookie: `next-auth.session-token=${userId}`,
-      },
-    }
-  )
-  const { data } = await response.json()
-
-  const total =
-    data?.reduce(
-      (sum: number, p: ProjectData) => sum + (p.feedbackCount || 0),
-      0
-    ) || 0
-  return <div className="text-2xl font-bold">{total}</div>
-}
-
-async function AvgRating({ userId }: { userId: string }) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/dashboard/projects`,
-    {
-      cache: 'no-store',
-      headers: {
-        cookie: `next-auth.session-token=${userId}`,
-      },
-    }
-  )
-  const { data } = await response.json()
-
-  const projectsWithRatings =
-    data?.filter((p: ProjectData) => p.avgRating !== null) || []
-  const avg =
-    projectsWithRatings.length > 0
-      ? projectsWithRatings.reduce(
-          (sum: number, p: ProjectData) => sum + (p.avgRating || 0),
-          0
-        ) / projectsWithRatings.length
-      : 0
-
-  return <div className="text-2xl font-bold">{avg.toFixed(1)}</div>
-}
-
-function ProjectsTableSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center space-x-4">
-          <div className="h-12 w-12 animate-pulse rounded bg-muted" />
-          <div className="space-y-2">
-            <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-32 animate-pulse rounded bg-muted" />
-          </div>
-        </div>
-      ))}
     </div>
   )
 }

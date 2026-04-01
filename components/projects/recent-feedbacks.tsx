@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Star, MessageSquare, Clock } from 'lucide-react'
+import { Star, MessageSquare, Clock, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface Feedback {
   id: string
@@ -15,6 +16,10 @@ interface Feedback {
   answers: {
     tags?: string[]
     comment?: string
+    email?: string
+  }
+  meta?: {
+    url?: string
   }
   createdAt: string
 }
@@ -40,10 +45,13 @@ export function RecentFeedbacks({ projectId, limit }: RecentFeedbacksProps) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: limit }).map((_, i) => (
-          <div key={i} className="flex items-start gap-4">
-            <Skeleton className="h-10 w-10 rounded-full" />
+          <div
+            key={i}
+            className="flex items-start gap-4 p-4 rounded-xl border bg-card"
+          >
+            <Skeleton className="h-10 w-10 rounded-full shrink-0" />
             <div className="space-y-2 flex-1">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-3 w-full" />
@@ -57,67 +65,126 @@ export function RecentFeedbacks({ projectId, limit }: RecentFeedbacksProps) {
 
   if (feedbacks.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No feedback yet. Share your widget link to start collecting feedback!
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+          <MessageSquare className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <p className="text-muted-foreground mb-2">No feedback yet</p>
+        <p className="text-sm text-muted-foreground">
+          Share your widget link to start collecting feedback!
+        </p>
+        <div className="mt-4">
+          <Link href={`/projects/${projectId}/install`}>
+            <Button variant="outline" size="sm">
+              Get widget code
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      {feedbacks.map((feedback) => (
-        <div
-          key={feedback.id}
-          className="flex items-start gap-4 p-4 rounded-lg border bg-card"
-        >
-          {/* Rating */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-            <span className="font-semibold">{feedback.rating}</span>
-          </div>
+    <div className="space-y-3">
+      {feedbacks.map((feedback, index) => {
+        const isPositive = feedback.rating >= 4
+        const isNegative = feedback.rating <= 2
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {feedback.answers.comment && (
-              <p className="text-sm line-clamp-2 mb-2">
-                {feedback.answers.comment}
-              </p>
+        return (
+          <div
+            key={feedback.id}
+            className={cn(
+              'group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200',
+              'hover:shadow-md hover:border-primary/50',
+              isPositive &&
+                'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30',
+              isNegative &&
+                'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30'
             )}
-            {feedback.answers.tags && feedback.answers.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {feedback.answers.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            {/* Rating */}
+            <div
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                isPositive &&
+                  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                isNegative &&
+                  'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+                !isPositive &&
+                  !isNegative &&
+                  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+              )}
+            >
+              <Star className="h-5 w-5 fill-current" />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {feedback.answers.comment && (
+                <p className="text-sm leading-relaxed mb-2 line-clamp-2">
+                  {feedback.answers.comment}
+                </p>
+              )}
+              {feedback.answers.tags && feedback.answers.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {feedback.answers.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-xs font-medium px-2 py-0.5 rounded-md"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatDistanceToNow(new Date(feedback.createdAt), {
+                    addSuffix: true,
+                  })}
+                </span>
+                {feedback.meta?.url && (
+                  <span
+                    className="flex items-center gap-1 truncate max-w-[150px]"
+                    title={feedback.meta.url}
+                  >
+                    <User className="h-3 w-3 shrink-0" />
+                    {(() => {
+                      try {
+                        return new URL(feedback.meta.url).hostname
+                      } catch {
+                        return feedback.meta.url
+                      }
+                    })()}
+                  </span>
+                )}
+                <Badge
+                  variant={feedback.status === 'new' ? 'default' : 'secondary'}
+                  className={cn(
+                    'text-xs font-medium px-2 py-0.5 rounded-md',
+                    feedback.status === 'new' &&
+                      'bg-primary text-primary-foreground',
+                    feedback.status === 'archived' &&
+                      'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {feedback.status}
+                </Badge>
               </div>
-            )}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatDistanceToNow(new Date(feedback.createdAt), {
-                  addSuffix: true,
-                })}
-              </span>
-              <Badge
-                variant={
-                  feedback.status === 'new'
-                    ? 'default'
-                    : feedback.status === 'read'
-                      ? 'secondary'
-                      : 'outline'
-                }
-                className="text-xs"
-              >
-                {feedback.status}
-              </Badge>
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
       <div className="pt-4">
         <Link href={`/projects/${projectId}/inbox`}>
-          <Button variant="outline" size="sm" className="w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+          >
             <MessageSquare className="mr-2 h-4 w-4" />
             View All Feedbacks
           </Button>

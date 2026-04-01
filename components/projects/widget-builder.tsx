@@ -259,6 +259,26 @@ const DEFAULT_CONFIG: WidgetConfig = {
   },
 }
 
+// Deep merge helper (outside component to avoid re-creation on each render)
+function mergeDeep<T>(target: T, source: Partial<T>): T {
+  const output = { ...target }
+  for (const key in source) {
+    if (
+      source[key] instanceof Object &&
+      !Array.isArray(source[key]) &&
+      key in output
+    ) {
+      output[key] = mergeDeep(
+        output[key] as T,
+        source[key] as unknown as Partial<T>
+      )
+    } else {
+      output[key] = source[key] as T[Extract<keyof T, string>]
+    }
+  }
+  return output
+}
+
 // ============================================================================
 // Main Widget Builder Component
 // ============================================================================
@@ -285,35 +305,6 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
         setLoading(false)
       })
   }, [projectId])
-
-  // Deep merge helper (outside useEffect)
-  function mergeDeep<T>(target: T, source: Partial<T>): T {
-    const output = { ...target }
-    for (const key in source) {
-      if (source[key] instanceof Object && key in output) {
-        output[key] = mergeDeep(
-          output[key] as T,
-          source[key] as unknown as Partial<T>
-        )
-      } else {
-        output[key] = source[key] as T[Extract<keyof T, string>]
-      }
-    }
-    return output
-  }
-
-  // Update config
-  const updateConfig = (updates: Partial<WidgetConfig>) => {
-    setConfig((prev) => ({ ...prev, ...updates }))
-  }
-
-  // Update flow
-  const updateFlow = (updates: Partial<WidgetFlow>) => {
-    setConfig((prev) => ({
-      ...prev,
-      flow: { ...prev.flow, ...updates },
-    }))
-  }
 
   // Update theme
   const updateTheme = (updates: Partial<WidgetTheme>) => {
@@ -410,7 +401,10 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
 
   // Add tag option to rule
   const addTagOption = (ruleIndex: number, tag: string) => {
-    if (!tag.trim()) return
+    if (!tag.trim()) {
+      toast.error('Tag tidak boleh kosong')
+      return
+    }
     const rules = [...(config.flow?.feedback_step?.logic_rules || [])]
     const tags = rules[ruleIndex].tags_options || []
     if (!tags.includes(tag.trim())) {
@@ -419,6 +413,9 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
         tags_options: [...tags, tag.trim()],
       }
       updateFeedbackStep({ logic_rules: rules })
+      toast.success('Tag ditambahkan')
+    } else {
+      toast.error('Tag sudah ada')
     }
   }
 
@@ -431,9 +428,10 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
         rules[ruleIndex].tags_options?.filter((t) => t !== tag) || [],
     }
     updateFeedbackStep({ logic_rules: rules })
+    toast.success('Tag dihapus')
   }
 
-  // Update demographics step
+  // Update demographics step (internal, no toast)
   const updateDemographicsStep = (updates: Partial<DemographicsStepConfig>) => {
     setConfig((prev) => ({
       ...prev,
@@ -455,6 +453,7 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
       required: false,
     })
     updateDemographicsStep({ fields })
+    toast.success('Field demografi ditambahkan')
   }
 
   // Update demographic field
@@ -472,6 +471,7 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     const fields = [...(config.flow?.demographics_step?.fields || [])]
     fields.splice(index, 1)
     updateDemographicsStep({ fields })
+    toast.success('Field demografi dihapus')
   }
 
   // Update success step
@@ -616,7 +616,7 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
                 <div className="space-y-2">
                   <Label>Label Trigger</Label>
                   <Input
-                    value={config.theme?.trigger_label || 'Feedback'}
+                    value={config.theme?.trigger_label ?? 'Feedback'}
                     onChange={(e) =>
                       updateTheme({ trigger_label: e.target.value })
                     }

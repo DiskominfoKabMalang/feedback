@@ -31,7 +31,7 @@ export default async function PublicFeedbackPage({ params }: PageProps) {
   return (
     <FeedbackForm
       projectId={projectData.id}
-      config={projectData.widgetConfig}
+      config={projectData.widgetConfig || {}}
     />
   )
 }

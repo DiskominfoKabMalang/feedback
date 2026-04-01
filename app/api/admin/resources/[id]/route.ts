@@ -1,8 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
-import { resources, permissions } from '@/db/schema'
-import { eq, ne, and } from 'drizzle-orm'
+import { resources } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 import { requireServerPermission } from '@/lib/rbac/server'
+
+/**
+ * GET /api/admin/resources/[id]
+ * Get a single resource by ID
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await requireServerPermission('resources.read')
+
+    const { id } = await params
+
+    const resource = await db
+      .select()
+      .from(resources)
+      .where(eq(resources.id, id))
+      .limit(1)
+
+    if (resource.length === 0) {
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ resource: resource[0] })
+  } catch (error) {
+    console.error('Get resource error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
 
 /**
  * PUT /api/admin/resources/[id]
@@ -38,21 +71,32 @@ export async function PUT(
       )
     }
 
-    // Check if another resource has this identifier
+    // Check if resource exists
     const existingResource = await db
       .select()
       .from(resources)
-      .where(and(eq(resources.identifier, identifier), ne(resources.id, id)))
+      .where(eq(resources.id, id))
       .limit(1)
 
-    if (existingResource.length > 0) {
+    if (existingResource.length === 0) {
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
+    }
+
+    // Check if identifier is already taken by another resource
+    const duplicateIdentifier = await db
+      .select()
+      .from(resources)
+      .where(eq(resources.identifier, identifier))
+      .limit(1)
+
+    if (duplicateIdentifier.length > 0 && duplicateIdentifier[0].id !== id) {
       return NextResponse.json(
         { error: 'Resource with this identifier already exists' },
         { status: 400 }
       )
     }
 
-    await db
+    const updatedResource = await db
       .update(resources)
       .set({
         name,
@@ -60,18 +104,14 @@ export async function PUT(
         description: description || null,
       })
       .where(eq(resources.id, id))
+      .returning()
 
-    return NextResponse.json({ message: 'Resource updated successfully' })
+    return NextResponse.json({ resource: updatedResource[0] })
   } catch (error) {
-    console.error('Error updating resource:', error)
+    console.error('Update resource error:', error)
     return NextResponse.json(
-      { error: 'Failed to update resource' },
-      {
-        status:
-          error instanceof Error && error.message.includes('Permission')
-            ? 403
-            : 500,
-      }
+      { error: 'Internal server error' },
+      { status: 500 }
     )
   }
 }
@@ -89,49 +129,25 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Get resource to check identifier
-    const resourceResult = await db
+    // Check if resource exists
+    const existingResource = await db
       .select()
       .from(resources)
       .where(eq(resources.id, id))
       .limit(1)
 
-    if (resourceResult.length === 0) {
+    if (existingResource.length === 0) {
       return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
-    }
-
-    const resource = resourceResult[0]
-
-    // Check usage in permissions
-    const usage = await db
-      .select()
-      .from(permissions)
-      .where(eq(permissions.resource, resource.identifier))
-      .limit(1)
-
-    if (usage.length > 0) {
-      return NextResponse.json(
-        {
-          error:
-            'Cannot delete resource because it is referenced by existing permissions.',
-        },
-        { status: 409 }
-      )
     }
 
     await db.delete(resources).where(eq(resources.id, id))
 
-    return NextResponse.json({ message: 'Resource deleted successfully' })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting resource:', error)
+    console.error('Delete resource error:', error)
     return NextResponse.json(
-      { error: 'Failed to delete resource' },
-      {
-        status:
-          error instanceof Error && error.message.includes('Permission')
-            ? 403
-            : 500,
-      }
+      { error: 'Internal server error' },
+      { status: 500 }
     )
   }
 }

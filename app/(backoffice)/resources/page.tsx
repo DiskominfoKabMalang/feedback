@@ -72,6 +72,7 @@ export default function ResourcesPage() {
       identifier: '',
       description: '',
     },
+    mode: 'onSubmit',
   })
 
   const fetchResources = useCallback(async () => {
@@ -81,7 +82,7 @@ export default function ResourcesPage() {
       const result = await response.json()
 
       if (mountedRef.current) {
-        setData(result.resources)
+        setData(result.resources || [])
       }
     } catch (error) {
       if (mountedRef.current) {
@@ -167,7 +168,6 @@ export default function ResourcesPage() {
 
       toast.success('Resource created successfully')
       setIsDialogOpen(false)
-      form.reset()
       fetchResources()
     } catch (error) {
       console.error('Error creating resource:', error)
@@ -200,8 +200,6 @@ export default function ResourcesPage() {
 
       toast.success('Resource updated successfully')
       setIsEditDialogOpen(false)
-      setEditingResource(null)
-      form.reset()
       fetchResources()
     } catch (error) {
       console.error('Error updating resource:', error)
@@ -213,18 +211,59 @@ export default function ResourcesPage() {
     }
   }
 
+  // Handle create dialog open/close with proper cleanup
   const handleCreateDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open)
-    if (!open) form.reset()
+    if (!open) {
+      // Clear form and errors when closing
+      form.reset()
+      form.clearErrors()
+      setEditingResource(null)
+    } else {
+      // Reset form when opening
+      form.reset({
+        name: '',
+        identifier: '',
+        description: '',
+      })
+      form.clearErrors()
+    }
   }
 
+  // Handle edit dialog open/close with proper cleanup
   const handleEditDialogOpenChange = (open: boolean) => {
     setIsEditDialogOpen(open)
     if (!open) {
-      setEditingResource(null)
+      // Clear form and errors when closing
       form.reset()
+      form.clearErrors()
+      setEditingResource(null)
     }
   }
+
+  // Reset form when switching between dialogs
+  useEffect(() => {
+    if (isDialogOpen) {
+      form.reset({
+        name: '',
+        identifier: '',
+        description: '',
+      })
+      form.clearErrors()
+      setEditingResource(null)
+    }
+  }, [isDialogOpen, form])
+
+  useEffect(() => {
+    if (isEditDialogOpen && editingResource) {
+      form.reset({
+        name: editingResource.name,
+        identifier: editingResource.identifier,
+        description: editingResource.description || '',
+      })
+      form.clearErrors()
+    }
+  }, [isEditDialogOpen, editingResource, form])
 
   return (
     <div className="space-y-4">
@@ -250,7 +289,10 @@ export default function ResourcesPage() {
                   Add Resource
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
+              <DialogContent
+                key={`create-${dialogKey}`}
+                className="sm:max-w-[500px]"
+              >
                 <DialogHeader>
                   <DialogTitle>Create New Resource</DialogTitle>
                   <DialogDescription>
@@ -312,6 +354,13 @@ export default function ResourcesPage() {
                       )}
                     />
                     <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
                       <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? 'Creating...' : 'Create Resource'}
                       </Button>
@@ -326,10 +375,13 @@ export default function ResourcesPage() {
               open={isEditDialogOpen}
               onOpenChange={handleEditDialogOpenChange}
             >
-              <DialogContent className="sm:max-w-[500px]">
+              <DialogContent
+                key={`edit-${dialogKey}-${editingResource?.id}`}
+                className="sm:max-w-[500px]"
+              >
                 <DialogHeader>
                   <DialogTitle>Edit Resource</DialogTitle>
-                  <DialogDescription>update resource details</DialogDescription>
+                  <DialogDescription>Update resource details</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                   <form
@@ -389,6 +441,7 @@ export default function ResourcesPage() {
                           setIsEditDialogOpen(false)
                           setEditingResource(null)
                           form.reset()
+                          form.clearErrors()
                         }}
                       >
                         Cancel

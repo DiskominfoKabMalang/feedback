@@ -1,25 +1,100 @@
 /**
  * Feedback Widget Styles
  * Scoped with fw- prefix to avoid conflicts
+ * Design System: Pisky (Primary #1B53D9, Secondary Coral #E07A5F)
  */
 
 @import "tailwindcss";
 
-/* Base Styles - Scoped untuk widget container */
-.fw-widget-container {
-  position: fixed;
-  z-index: 9999;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - Matches main app design system
+   ============================================================================ */
+
+:root {
+  /* Primary scale - Blue #1B53D9 */
+  --fw-primary-50: #e8f0fe;
+  --fw-primary-100: #d2e1fc;
+  --fw-primary-200: #a6c4f8;
+  --fw-primary-300: #7aa7f4;
+  --fw-primary-400: #4e89f0;
+  --fw-primary-500: #1b53d9;
+  --fw-primary-600: #1644b3;
+  --fw-primary-700: #11358c;
+  --fw-primary-800: #0d2666;
+  --fw-primary-900: #081840;
+  --fw-primary: #1b53d9;
+
+  /* Secondary scale - Coral/Terracotta */
+  --fw-secondary-50: #fef6f4;
+  --fw-secondary-100: #fce9e4;
+  --fw-secondary-200: #f8d3c9;
+  --fw-secondary-300: #f0a08f;
+  --fw-secondary-400: #e07a5f;
+  --fw-secondary-500: #d45d4a;
+  --fw-secondary-600: #b8463e;
+  --fw-secondary-700: #923635;
+  --fw-secondary-800: #722f33;
+  --fw-secondary-900: #5a2b31;
+  --fw-secondary: #e07a5f;
+
+  /* Neutral scale */
+  --fw-neutral-50: #f9fafb;
+  --fw-neutral-100: #f3f4f6;
+  --fw-neutral-200: #e5e7eb;
+  --fw-neutral-300: #d1d5db;
+  --fw-neutral-400: #9ca3af;
+  --fw-neutral-500: #6b7280;
+  --fw-neutral-600: #4b5563;
+  --fw-neutral-700: #374151;
+  --fw-neutral-800: #1f2937;
+  --fw-neutral-900: #111827;
+
+  /* Semantic colors */
+  --fw-success: #10b981;
+  --fw-success-light: #34d399;
+  --fw-success-dark: #059669;
+  --fw-warning: #f59e0b;
+  --fw-warning-light: #fcd34d;
+  --fw-warning-dark: #d97706;
+  --fw-error: #ef4444;
+  --fw-error-light: #f87171;
+  --fw-error-dark: #dc2626;
+
+  /* Surface tokens */
+  --fw-background: #ffffff;
+  --fw-foreground: var(--fw-neutral-900);
+  --fw-muted: var(--fw-neutral-100);
+  --fw-muted-foreground: var(--fw-neutral-600);
+  --fw-border: var(--fw-neutral-200);
+  --fw-ring: var(--fw-primary-400);
 }
 
-/* Container */
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fw-background: #1f2937;
+    --fw-foreground: var(--fw-neutral-50);
+    --fw-muted: var(--fw-neutral-800);
+    --fw-muted-foreground: var(--fw-neutral-400);
+    --fw-border: var(--fw-neutral-700);
+  }
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+.fw-widget-container,
 .feedback-widget-container {
   position: fixed;
   z-index: 9999;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Inter', sans-serif;
 }
 
-/* Position classes */
+/* ============================================================================
+   POSITION CLASSES
+   ============================================================================ */
+
 .fw-position-bottom_left {
   bottom: 1rem;
   left: 1rem;
@@ -40,7 +115,10 @@
   right: 1rem;
 }
 
-/* Trigger Button */
+/* ============================================================================
+   TRIGGER BUTTON
+   ============================================================================ */
+
 .fw-trigger {
   display: inline-flex;
   align-items: center;
@@ -50,14 +128,15 @@
   font-weight: 500;
   font-size: 0.875rem;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(27, 83, 217, 0.25);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--fw-primary);
 }
 
 .fw-trigger:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(27, 83, 217, 0.35);
 }
 
 .fw-trigger:active {
@@ -69,11 +148,11 @@
 }
 
 .fw-btn-rounded {
-  border-radius: 0.5rem;
+  border-radius: 0.625rem;
 }
 
 .fw-btn-square {
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
 }
 
 .fw-trigger-icon-img {
@@ -85,11 +164,15 @@
   font-size: 1.25rem;
 }
 
-/* Modal Overlay */
+/* ============================================================================
+   MODAL OVERLAY
+   ============================================================================ */
+
 .fw-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,66 +181,84 @@
 }
 
 @keyframes fw-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Modal Content */
+/* ============================================================================
+   MODAL CONTENT
+   ============================================================================ */
+
 .fw-modal-content {
-  background: white;
+  background: var(--fw-background);
   border-radius: 1rem;
   padding: 1.5rem;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: fw-slideUp 0.3s ease-out;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  animation: fw-slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--fw-border);
 }
 
 @keyframes fw-slideUp {
   from {
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.96);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
-/* Screens */
+/* ============================================================================
+   SCREENS
+   ============================================================================ */
+
 .fw-screen {
   text-align: center;
 }
 
-/* Title */
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
 .fw-title {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0 0 0.75rem 0;
-  color: #111827;
+  color: var(--fw-foreground);
+  letter-spacing: -0.01em;
 }
 
-/* Subtitle */
 .fw-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--fw-muted-foreground);
   margin: 0 0 1rem 0;
+  line-height: 1.5;
 }
 
-/* Description */
 .fw-description {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--fw-muted-foreground);
   margin: 0 0 1rem 0;
+  line-height: 1.5;
 }
 
-/* Rating Buttons */
+.fw-field-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fw-foreground);
+  margin-bottom: 0.375rem;
+}
+
+/* ============================================================================
+   RATING BUTTONS
+   ============================================================================ */
+
 .fw-rating-buttons {
   display: flex;
   justify-content: center;
@@ -167,32 +268,34 @@
 }
 
 .fw-rating-btn {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 2px solid #fbbf24;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid var(--fw-warning);
   background: transparent;
-  color: #fbbf24;
+  color: var(--fw-warning);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fw-rating-btn:hover {
-  background: #fef3c7;
+  background: var(--fw-warning-light);
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .fw-emoji-btn {
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   color: inherit;
+  background: transparent;
 }
 
 .fw-emoji-btn:hover {
-  background: #f3f4f6;
+  background: var(--fw-muted);
   transform: scale(1.15);
 }
 
@@ -200,7 +303,10 @@
   font-weight: 600;
 }
 
-/* Rating Display */
+/* ============================================================================
+   RATING DISPLAY
+   ============================================================================ */
+
 .fw-rating-display-container {
   display: flex;
   justify-content: center;
@@ -215,6 +321,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0.3;
+  transition: opacity 0.2s;
 }
 
 .fw-rating-display.fw-active {
@@ -231,15 +338,11 @@
 }
 
 .fw-number-display {
-  border: 2px solid #fbbf24;
+  border: 2px solid var(--fw-warning);
   border-radius: 50%;
-  color: #fbbf24;
+  color: var(--fw-warning);
   font-size: 0.75rem;
   font-weight: 600;
-}
-
-.fw-number-display.fw-active {
-  opacity: 1;
 }
 
 .fw-star-display {
@@ -248,44 +351,73 @@
 
 .fw-star-display.fw-active {
   opacity: 1;
+  color: var(--fw-warning);
 }
 
-/* Textarea */
+/* ============================================================================
+   FORM INPUTS
+   ============================================================================ */
+
 .fw-textarea {
   width: 100%;
-  min-height: 80px;
+  min-height: 90px;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  border: 1px solid var(--fw-border);
+  border-radius: 0.625rem;
   font-size: 0.875rem;
   resize: vertical;
   margin-bottom: 0.75rem;
   font-family: inherit;
+  background: var(--fw-background);
+  color: var(--fw-foreground);
+  transition: all 0.2s;
 }
 
 .fw-textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--fw-primary);
+  box-shadow: 0 0 0 3px rgba(27, 83, 217, 0.1);
 }
 
-/* Input */
 .fw-input {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  border: 1px solid var(--fw-border);
+  border-radius: 0.625rem;
   font-size: 0.875rem;
   margin-bottom: 0.75rem;
+  background: var(--fw-background);
+  color: var(--fw-foreground);
+  transition: all 0.2s;
 }
 
 .fw-input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--fw-primary);
+  box-shadow: 0 0 0 3px rgba(27, 83, 217, 0.1);
 }
 
-/* Tags */
+.fw-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--fw-border);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  background: var(--fw-background);
+  color: var(--fw-foreground);
+  transition: all 0.2s;
+}
+
+.fw-select:focus {
+  outline: none;
+  border-color: var(--fw-primary);
+  box-shadow: 0 0 0 3px rgba(27, 83, 217, 0.1);
+}
+
+/* ============================================================================
+   TAGS / CHIPS
+   ============================================================================ */
+
 .fw-tags {
   display: flex;
   flex-wrap: wrap;
@@ -295,149 +427,58 @@
 }
 
 .fw-tag-option {
-  padding: 0.375rem 0.75rem;
-  background: #f3f4f6;
-  color: #374151;
+  padding: 0.5rem 0.875rem;
+  background: var(--fw-muted);
+  color: var(--fw-foreground);
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent;
 }
 
 .fw-tag-option:hover {
-  background: #e5e7eb;
+  background: var(--fw-neutral-200);
 }
 
 .fw-tag-option.fw-active {
-  background: #6366f1;
+  background: var(--fw-primary);
   color: white;
+  box-shadow: 0 2px 8px rgba(27, 83, 217, 0.3);
 }
 
-/* Submit Button */
-.fw-submit-btn {
-  width: 100%;
-  padding: 0.75rem;
-  color: white;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.fw-submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.fw-submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* CTA Button */
-.fw-cta-btn {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
-  color: white;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: none;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  margin-top: 1rem;
-}
-
-/* Close Button */
-.fw-close-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: transparent;
-  color: #6b7280;
-  font-size: 0.875rem;
-  border: none;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-.fw-close-btn:hover {
-  color: #374151;
-}
-
-/* Back Button */
-.fw-back-btn {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: transparent;
-  color: #6b7280;
-  font-size: 0.875rem;
-  border: none;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-.fw-back-btn:hover {
-  color: #374151;
-}
-
-/* Success Icon */
-.fw-success-icon {
-  width: 3rem;
-  height: 3rem;
-  margin: 0 auto 1rem;
-  background: #10b981;
-  color: white;
-  border-radius: 50%;
+.fw-chips {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-/* Branding */
-.fw-branding {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  text-align: center;
-}
-
-.fw-branding span {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-
-/* Demographic Fields */
-.fw-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.fw-field-group {
-  text-align: left;
-}
-
-.fw-field-label {
-  display: block;
+.fw-chip {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--fw-border);
+  border-radius: 9999px;
+  background: var(--fw-background);
+  cursor: pointer;
+  transition: all 0.2s;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.375rem;
+  color: var(--fw-foreground);
 }
 
-.fw-select {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  background: white;
+.fw-chip:hover {
+  background: var(--fw-muted);
 }
+
+.fw-chip.fw-active {
+  background: var(--fw-primary);
+  color: white;
+  border-color: var(--fw-primary);
+  box-shadow: 0 2px 8px rgba(27, 83, 217, 0.3);
+}
+
+/* ============================================================================
+   RADIO GROUP
+   ============================================================================ */
 
 .fw-radio-group {
   display: flex;
@@ -449,49 +490,33 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--fw-border);
   border-radius: 9999px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.875rem;
+  color: var(--fw-foreground);
 }
 
 .fw-radio-option input {
   display: none;
 }
 
+.fw-radio-option:hover {
+  background: var(--fw-muted);
+}
+
 .fw-radio-option.fw-active {
-  background: #6366f1;
+  background: var(--fw-primary);
   color: white;
-  border-color: #6366f1;
+  border-color: var(--fw-primary);
+  box-shadow: 0 2px 8px rgba(27, 83, 217, 0.3);
 }
 
-.fw-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.fw-chip {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 9999px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.875rem;
-}
-
-.fw-chip:hover {
-  background: #f3f4f6;
-}
-
-.fw-chip.fw-active {
-  background: #6366f1;
-  color: white;
-  border-color: #6366f1;
-}
+/* ============================================================================
+   CHECKBOX GROUP
+   ============================================================================ */
 
 .fw-checkbox-group {
   display: flex;
@@ -502,77 +527,153 @@
 .fw-checkbox-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   font-size: 0.875rem;
   cursor: pointer;
+  color: var(--fw-foreground);
 }
 
-.fw-checkbox-option input {
+.fw-checkbox-option input[type="checkbox"] {
   width: 1rem;
   height: 1rem;
+  accent-color: var(--fw-primary);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .fw-modal-content {
-    background: #1f2937;
-  }
+/* ============================================================================
+   FIELDS
+   ============================================================================ */
 
-  .fw-title {
-    color: #f9fafb;
-  }
-
-  .fw-subtitle,
-  .fw-description {
-    color: #9ca3af;
-  }
-
-  .fw-textarea,
-  .fw-input,
-  .fw-select {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
-  }
-
-  .fw-tag-option {
-    background: #374151;
-    color: #d1d5db;
-  }
-
-  .fw-tag-option:hover {
-    background: #4b5563;
-  }
-
-  .fw-radio-option {
-    border-color: #4b5563;
-    color: #d1d5db;
-  }
-
-  .fw-chip {
-    background: #374151;
-    border-color: #4b5563;
-    color: #d1d5db;
-  }
-
-  .fw-chip:hover {
-    background: #4b5563;
-  }
-
-  .fw-field-label {
-    color: #d1d5db;
-  }
-
-  .fw-branding {
-    border-top-color: #374151;
-  }
+.fw-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-/* Mobile Responsive */
+.fw-field-group {
+  text-align: left;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.fw-submit-btn {
+  width: 100%;
+  padding: 0.875rem;
+  color: white;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--fw-primary);
+  box-shadow: 0 2px 8px rgba(27, 83, 217, 0.25);
+}
+
+.fw-submit-btn:hover:not(:disabled) {
+  background: var(--fw-primary-600);
+  box-shadow: 0 4px 12px rgba(27, 83, 217, 0.35);
+  transform: translateY(-1px);
+}
+
+.fw-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.fw-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.fw-cta-btn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem;
+  color: white;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.625rem;
+  text-decoration: none;
+  margin-top: 1rem;
+  background: var(--fw-secondary);
+  box-shadow: 0 2px 8px rgba(224, 122, 95, 0.3);
+  transition: all 0.2s;
+}
+
+.fw-cta-btn:hover {
+  background: var(--fw-secondary-500);
+  box-shadow: 0 4px 12px rgba(224, 122, 95, 0.4);
+  transform: translateY(-1px);
+}
+
+.fw-close-btn,
+.fw-back-btn {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: transparent;
+  color: var(--fw-muted-foreground);
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.fw-close-btn:hover,
+.fw-back-btn:hover {
+  color: var(--fw-foreground);
+  background: var(--fw-muted);
+}
+
+/* ============================================================================
+   SUCCESS ICON
+   ============================================================================ */
+
+.fw-success-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  background: var(--fw-success);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* ============================================================================
+   BRANDING
+   ============================================================================ */
+
+.fw-branding {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fw-border);
+  text-align: center;
+}
+
+.fw-branding span {
+  font-size: 0.75rem;
+  color: var(--fw-muted-foreground);
+}
+
+/* ============================================================================
+   MOBILE RESPONSIVE
+   ============================================================================ */
+
 @media (max-width: 480px) {
   .fw-modal-content {
     margin: 1rem;
     max-height: calc(100vh - 2rem);
+    border-radius: 0.875rem;
   }
 
   .fw-rating-buttons {
@@ -580,12 +681,37 @@
   }
 
   .fw-rating-btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .fw-emoji-btn {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
+
+  .fw-submit-btn,
+  .fw-cta-btn {
+    padding: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR STYLING
+   ============================================================================ */
+
+.fw-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fw-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fw-modal-content::-webkit-scrollbar-thumb {
+  background: var(--fw-neutral-300);
+  border-radius: 3px;
+}
+
+.fw-modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--fw-neutral-400);
 }

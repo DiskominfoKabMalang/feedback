@@ -60,47 +60,24 @@ export async function GET(
  * Request Body:
  * - name (optional)
  * - domainWhitelist (optional)
- * - widgetConfig (optional)
+ * - widgetConfig (optional) - passed through without validation
  * - settings (optional)
  * - tier (optional - for admin only)
  *
  * Protected: Requires authentication
  */
-const UpdateProjectSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  domainWhitelist: z.array(z.string()).min(1).optional(),
-  widgetConfig: z
-    .object({
-      theme: z
-        .object({
-          color_primary: z.string().optional(),
-          position: z
-            .enum(['bottom_left', 'bottom_right', 'top_left', 'top_right'])
-            .optional(),
-          trigger_label: z.string().optional(),
-        })
-        .optional(),
-      logic: z
-        .array(
-          z.object({
-            rating_group: z.array(z.number().int().min(1).max(5)),
-            title: z.string(),
-            tags: z.array(z.string()),
-            placeholder: z.string(),
-            collect_email: z.boolean(),
-            cta_redirect: z.string().optional(),
-          })
-        )
-        .optional(),
-    })
-    .optional(),
-  settings: z
-    .object({
-      remove_branding: z.boolean().optional(),
-      retention_days: z.number().int().positive().optional(),
-    })
-    .optional(),
-})
+const UpdateProjectSchema = z
+  .object({
+    name: z.string().min(1).max(255).optional(),
+    domainWhitelist: z.array(z.string()).min(1).optional(),
+    settings: z
+      .object({
+        remove_branding: z.boolean().optional(),
+        retention_days: z.number().int().positive().optional(),
+      })
+      .optional(),
+  })
+  .passthrough()
 
 export async function PATCH(
   request: NextRequest,

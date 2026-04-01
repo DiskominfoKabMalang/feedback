@@ -110,7 +110,7 @@ export default function PermissionsPage() {
       const result = await response.json()
 
       if (mountedRef.current) {
-        setData(result.permissions)
+        setData(result.permissions || [])
       }
     } catch (error) {
       if (mountedRef.current) {
@@ -132,7 +132,14 @@ export default function PermissionsPage() {
       const result = await response.json()
 
       if (mountedRef.current) {
-        setResources(result.resources)
+        const resourcesList = result.resources || []
+        console.log('Resources loaded:', resourcesList)
+        setResources(resourcesList)
+
+        // If no resources exist, show a message to create them first
+        if (resourcesList.length === 0) {
+          toast.warning('No resources found. Please create resources first.')
+        }
       }
     } catch (error) {
       if (mountedRef.current) {
@@ -228,11 +235,11 @@ export default function PermissionsPage() {
   }, [])
 
   // Auto-generate slug based on resource and action
-  const handleResourceOrActionChange = () => {
-    const resource = form.getValues('resource')
-    const action = form.getValues('action')
-    if (resource && action) {
-      form.setValue('slug', `${resource}.${action}`)
+  const handleResourceOrActionChange = (resource?: string, action?: string) => {
+    const currentResource = resource || form.getValues('resource')
+    const currentAction = action || form.getValues('action')
+    if (currentResource && currentAction) {
+      form.setValue('slug', `${currentResource}.${currentAction}`)
     }
   }
 
@@ -352,6 +359,17 @@ export default function PermissionsPage() {
     [fetchPermissions]
   )
 
+  // Get unique resource values from current data for filter
+  const resourceOptions = Array.from(new Set(data.map((p) => p.resource))).map(
+    (resource) => {
+      const resourceData = resources.find((r) => r.identifier === resource)
+      return {
+        label: resourceData?.name || resource,
+        value: resource,
+      }
+    }
+  )
+
   return (
     <div className="space-y-4">
       {/* Statistics Cards */}
@@ -450,138 +468,158 @@ export default function PermissionsPage() {
                     Create a new permission for specific resource and action
                   </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <div className="grid grid-cols-2 gap-4">
+                {resources.length === 0 ? (
+                  <div className="py-6 text-center">
+                    <p className="text-muted-foreground mb-4">
+                      No resources available. Please create resources first.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => (window.location.href = '/resources')}
+                    >
+                      Go to Resources
+                    </Button>
+                  </div>
+                ) : (
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4"
+                    >
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="resource"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Resource</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => {
+                                  field.onChange(value)
+                                  handleResourceOrActionChange(
+                                    value,
+                                    form.getValues('action')
+                                  )
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select resource" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {resources.map((resource) => (
+                                    <SelectItem
+                                      key={resource.identifier}
+                                      value={resource.identifier}
+                                    >
+                                      {resource.name} ({resource.identifier})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="action"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Action</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(value) => {
+                                  field.onChange(value)
+                                  handleResourceOrActionChange(
+                                    form.getValues('resource'),
+                                    value
+                                  )
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select action" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {actions.map((action) => (
+                                    <SelectItem key={action} value={action}>
+                                      {action}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                       <FormField
                         control={form.control}
-                        name="resource"
+                        name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Resource</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value)
-                                handleResourceOrActionChange()
-                              }}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select resource" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {resources.map((resource) => (
-                                  <SelectItem
-                                    key={resource.identifier}
-                                    value={resource.identifier}
-                                  >
-                                    {resource.name} ({resource.identifier})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g., Create Users"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Display name for the permission
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name="action"
+                        name="slug"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Action</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value)
-                                handleResourceOrActionChange()
-                              }}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select action" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {actions.map((action) => (
-                                  <SelectItem key={action} value={action}>
-                                    {action}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormLabel>Slug</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g., users.create"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Unique identifier (auto-generated from resource
+                              and action)
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Create Users"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Display name for the permission
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="slug"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Slug</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., users.create"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Unique identifier (auto-generated from resource and
-                            action)
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Describe what this permission allows..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <DialogFooter>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Creating...' : 'Create Permission'}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Describe what this permission allows..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Creating...' : 'Create Permission'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                )}
               </DialogContent>
             </Dialog>
 
@@ -610,11 +648,14 @@ export default function PermissionsPage() {
                           <FormItem>
                             <FormLabel>Resource</FormLabel>
                             <Select
+                              value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value)
-                                handleResourceOrActionChange()
+                                handleResourceOrActionChange(
+                                  value,
+                                  form.getValues('action')
+                                )
                               }}
-                              defaultValue={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -643,11 +684,14 @@ export default function PermissionsPage() {
                           <FormItem>
                             <FormLabel>Action</FormLabel>
                             <Select
+                              value={field.value}
                               onValueChange={(value) => {
                                 field.onChange(value)
-                                handleResourceOrActionChange()
+                                handleResourceOrActionChange(
+                                  form.getValues('resource'),
+                                  value
+                                )
                               }}
-                              defaultValue={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -754,10 +798,7 @@ export default function PermissionsPage() {
               {
                 columnId: 'resource',
                 title: 'Resource',
-                options: resources.map((resource) => ({
-                  label: resource.name,
-                  value: resource.identifier,
-                })),
+                options: resourceOptions,
               },
               {
                 columnId: 'action',

@@ -75,25 +75,58 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Return widget configuration
-    return NextResponse.json(
-      {
-        project_name: project.name,
-        theme: project.widgetConfig?.theme || {
-          color_primary: '#000000',
-          position: 'bottom_right',
-          trigger_label: 'Feedback',
-        },
-        logic: project.widgetConfig?.logic || [],
+    // Return widget configuration (flow-based format)
+    // Merge database config with defaults
+    const widgetConfig = project.widgetConfig || {}
+
+    // Build response with flow structure
+    const response = {
+      project_name: project.name,
+      version: widgetConfig.version || '1.0.0',
+      theme: widgetConfig.theme || {
+        primary_color: '#6366f1',
+        position: 'bottom_right',
+        trigger_label: 'Feedback',
+        button_style: 'pill' as const,
       },
-      {
-        status: 200,
-        headers: {
-          // Cache for 5 minutes to reduce database load
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      behavior: widgetConfig.behavior || {
+        show_branding: true,
+        persistence: 'none' as const,
+        auto_open: false,
+      },
+      flow: widgetConfig.flow || {
+        rating_step: {
+          enabled: true,
+          type: 'emoji' as const,
+          scale: 5,
+          title: 'Seberapa puas Anda dengan layanan kami?',
         },
-      }
-    )
+        feedback_step: {
+          enabled: true,
+          logic_rules: widgetConfig.logic || [],
+        },
+        demographics_step: {
+          enabled: false,
+          required: false,
+          title: 'Sedikit lagi! Lengkapi data berikut:',
+          fields: [],
+        },
+        success_step: {
+          title: 'Terima Kasih!',
+          message: 'Masukan Anda membantu kami menjadi lebih baik.',
+          auto_close_seconds: 5,
+          show_cta: false,
+        },
+      },
+    }
+
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        // Cache for 5 minutes to reduce database load
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    })
   } catch (error) {
     console.error('[Widget Config API] Error:', error)
     return NextResponse.json(

@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MoreHorizontal, Star, MessageSquare, ExternalLink } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -31,33 +30,14 @@ interface Project {
   tier: string
   feedbackCount: number
   avgRating: number | null
-  createdAt: string
+  createdAt: Date | string
 }
 
 interface ProjectsTableProps {
-  userId: string
+  projects: Project[]
 }
 
-export function ProjectsTable({ userId }: ProjectsTableProps) {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/dashboard/projects')
-      .then((res) => res.json())
-      .then((data) => {
-        setProjects(data.data || [])
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [userId])
-
-  if (loading) {
-    return (
-      <div className="py-8 text-center text-muted-foreground">Loading...</div>
-    )
-  }
-
+export function ProjectsTable({ projects }: ProjectsTableProps) {
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">

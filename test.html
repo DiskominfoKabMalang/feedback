@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Widget Test</title>
+  </head>
+  <body>
+    <h1>Feedback Widget Test</h1>
+    <p>This page tests the feedback widget.</p>
+
+    <!-- Load widget from dev server -->
+    <script type="module" src="http://localhost:5173/src/widget.tsx"></script>
+    <script>
+      FeedbackWidget.init({
+        projectId: '5675e8f1-d46c-433c-886d-45c5e039fbc7',
+        apiEndpoint: 'http://localhost:3000',
+        debug: true,
+      })
+    </script>
+  </body>
+</html>
