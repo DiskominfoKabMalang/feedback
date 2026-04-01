@@ -35,8 +35,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/package.json ./package.json
 
-# Install production dependencies only
-RUN pnpm install --prod --no-optional
+# Install production dependencies only (skip scripts like husky)
+RUN pnpm install --prod --no-optional --ignore-scripts
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
