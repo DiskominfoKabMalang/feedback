@@ -33,6 +33,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'standalone', // Required for Docker deployment
   // Allow network access in development
   experimental: {
     allowedRevalidateHeaderKeys: ['true'],
