@@ -29,7 +29,16 @@
       "Bash(npx tsc:*)",
       "Bash(node:*)",
       "Bash(curl:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(gh repo list:*)",
+      "Bash(git remote remove:*)",
+      "Bash(git remote rename:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(head:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

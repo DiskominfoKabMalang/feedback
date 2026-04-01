@@ -1,5 +1,5 @@
-import { db } from './db/index.ts'
-import { projects } from './db/schema.ts'
+import { db } from '@/db'
+import { projects } from '@/db/schema'
 
 const result = await db
   .select({ id: projects.id, name: projects.name })

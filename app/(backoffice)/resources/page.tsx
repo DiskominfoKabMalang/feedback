@@ -289,10 +289,7 @@ export default function ResourcesPage() {
                   Add Resource
                 </Button>
               </DialogTrigger>
-              <DialogContent
-                key={`create-${dialogKey}`}
-                className="sm:max-w-[500px]"
-              >
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Create New Resource</DialogTitle>
                   <DialogDescription>
@@ -375,10 +372,7 @@ export default function ResourcesPage() {
               open={isEditDialogOpen}
               onOpenChange={handleEditDialogOpenChange}
             >
-              <DialogContent
-                key={`edit-${dialogKey}-${editingResource?.id}`}
-                className="sm:max-w-[500px]"
-              >
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Edit Resource</DialogTitle>
                   <DialogDescription>Update resource details</DialogDescription>

@@ -429,7 +429,7 @@ function FeedbackWidget({
       return emojis.map((emoji, i) => (
         <button
           key={i}
-          class="fw-rating-btn fw-emoji-btn"
+          className="fw-rating-btn fw-emoji-btn"
           onClick={() => handleRatingClick(i + 1)}
           aria-label={`Rate ${i + 1}`}
         >
@@ -442,7 +442,7 @@ function FeedbackWidget({
       return Array.from({ length: scale }, (_, i) => i + 1).map((r) => (
         <button
           key={r}
-          class="fw-rating-btn fw-star-btn"
+          className="fw-rating-btn fw-star-btn"
           onClick={() => handleRatingClick(r)}
           aria-label={`Rate ${r} stars`}
         >
@@ -457,7 +457,7 @@ function FeedbackWidget({
     return Array.from({ length: scale }, (_, i) => i + 1).map((r) => (
       <button
         key={r}
-        class="fw-rating-btn fw-number-btn"
+        className="fw-rating-btn fw-number-btn"
         onClick={() => handleRatingClick(r)}
         aria-label={`Rate ${r}`}
       >
@@ -481,7 +481,7 @@ function FeedbackWidget({
       return emojis.map((emoji, i) => (
         <span
           key={i}
-          class={`fw-rating-display fw-emoji-display ${i + 1 <= (selectedRating || 0) ? 'fw-active' : ''}`}
+          className={`fw-rating-display fw-emoji-display ${i + 1 <= (selectedRating || 0) ? 'fw-active' : ''}`}
         >
           {emoji}
         </span>
@@ -492,7 +492,7 @@ function FeedbackWidget({
       return Array.from({ length: scale }, (_, i) => i + 1).map((r) => (
         <span
           key={r}
-          class={`fw-rating-display fw-star-display ${r <= (selectedRating || 0) ? 'fw-active' : ''}`}
+          className={`fw-rating-display fw-star-display ${r <= (selectedRating || 0) ? 'fw-active' : ''}`}
         >
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -505,7 +505,7 @@ function FeedbackWidget({
     return Array.from({ length: scale }, (_, i) => i + 1).map((r) => (
       <span
         key={r}
-        class={`fw-rating-display fw-number-display ${r <= (selectedRating || 0) ? 'fw-active' : ''}`}
+        className={`fw-rating-display fw-number-display ${r <= (selectedRating || 0) ? 'fw-active' : ''}`}
       >
         {r}
       </span>
@@ -516,9 +516,9 @@ function FeedbackWidget({
   const getTriggerIcon = () => {
     const icon = config.theme?.trigger_icon
     if (icon && icon.startsWith('http')) {
-      return <img src={icon} alt="" class="fw-trigger-icon-img" />
+      return <img src={icon} alt="" className="fw-trigger-icon-img" />
     }
-    return <span class="fw-trigger-icon-emoji">💬</span>
+    return <span className="fw-trigger-icon-emoji">💬</span>
   }
 
   // Render demographic field
@@ -527,13 +527,13 @@ function FeedbackWidget({
 
     if (field.type === 'select') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
           <select
-            class="fw-select"
+            className="fw-select"
             required={field.required}
             onChange={(e) =>
               setDemographics({
@@ -555,16 +555,16 @@ function FeedbackWidget({
 
     if (field.type === 'radio_group') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
-          <div class="fw-radio-group">
+          <div className="fw-radio-group">
             {field.options?.map((opt, idx) => (
               <label
                 key={`${field.key}-${idx}`}
-                class={`fw-radio-option ${value === opt ? 'fw-active' : ''}`}
+                className={`fw-radio-option ${value === opt ? 'fw-active' : ''}`}
               >
                 <input
                   type="radio"
@@ -585,17 +585,17 @@ function FeedbackWidget({
 
     if (field.type === 'chips') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
-          <div class="fw-chips">
+          <div className="fw-chips">
             {field.options?.map((opt, idx) => (
               <button
                 key={`${field.key}-${idx}`}
                 type="button"
-                class={`fw-chip ${value === opt ? 'fw-active' : ''}`}
+                className={`fw-chip ${value === opt ? 'fw-active' : ''}`}
                 onClick={() =>
                   setDemographics({ ...demographics, [field.key]: opt })
                 }
@@ -610,16 +610,19 @@ function FeedbackWidget({
 
     if (field.type === 'checkbox') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
-          <div class="fw-checkbox-group">
+          <div className="fw-checkbox-group">
             {field.options?.map((opt, idx) => {
               const checked = Array.isArray(value) ? value.includes(opt) : false
               return (
-                <label key={`${field.key}-${idx}`} class="fw-checkbox-option">
+                <label
+                  key={`${field.key}-${idx}`}
+                  className="fw-checkbox-option"
+                >
                   <input
                     type="checkbox"
                     checked={checked}
@@ -649,14 +652,14 @@ function FeedbackWidget({
 
     if (field.type === 'email') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
           <input
             type="email"
-            class="fw-input"
+            className="fw-input"
             placeholder={field.placeholder || ''}
             value={value}
             required={field.required}
@@ -673,14 +676,14 @@ function FeedbackWidget({
 
     if (field.type === 'number') {
       return (
-        <div class="fw-field-group">
-          <label class="fw-field-label">
+        <div className="fw-field-group">
+          <label className="fw-field-label">
             {field.label}
             {field.required && ' *'}
           </label>
           <input
             type="number"
-            class="fw-input"
+            className="fw-input"
             placeholder={field.placeholder || ''}
             value={value}
             required={field.required}
@@ -697,14 +700,14 @@ function FeedbackWidget({
 
     // text (default)
     return (
-      <div class="fw-field-group">
-        <label class="fw-field-label">
+      <div className="fw-field-group">
+        <label className="fw-field-label">
           {field.label}
           {field.required && ' *'}
         </label>
         <input
           type="text"
-          class="fw-input"
+          className="fw-input"
           placeholder={field.placeholder || ''}
           value={value}
           required={field.required}
@@ -723,11 +726,11 @@ function FeedbackWidget({
   const renderContent = () => {
     if (step === 'rating') {
       return (
-        <div class="fw-screen fw-rating-screen">
-          <h4 class="fw-title">
+        <div className="fw-screen fw-rating-screen">
+          <h4 className="fw-title">
             {config.flow?.rating_step?.title || 'Rate your experience'}
           </h4>
-          <div class="fw-rating-buttons">{renderRatingButtons()}</div>
+          <div className="fw-rating-buttons">{renderRatingButtons()}</div>
         </div>
       )
     }
@@ -739,19 +742,19 @@ function FeedbackWidget({
         selectedTags.length > 0
 
       return (
-        <div class="fw-screen fw-feedback-screen">
-          <div class="fw-rating-display-container">
+        <div className="fw-screen fw-feedback-screen">
+          <div className="fw-rating-display-container">
             {renderSelectedRating()}
           </div>
 
           {normalizedRule.subtitle && (
-            <p class="fw-subtitle">{normalizedRule.subtitle}</p>
+            <p className="fw-subtitle">{normalizedRule.subtitle}</p>
           )}
 
-          <h4 class="fw-title">{normalizedRule.title}</h4>
+          <h4 className="fw-title">{normalizedRule.title}</h4>
 
           <textarea
-            class="fw-textarea"
+            className="fw-textarea"
             placeholder={normalizedRule.placeholder || 'Share your thoughts...'}
             value={comment}
             onInput={(e) => setComment((e.target as HTMLTextAreaElement).value)}
@@ -760,12 +763,12 @@ function FeedbackWidget({
 
           {normalizedRule.tags_options &&
             normalizedRule.tags_options.length > 0 && (
-              <div class="fw-tags">
+              <div className="fw-tags">
                 {normalizedRule.tags_options.map((tag: string) => (
                   <button
                     type="button"
                     key={tag}
-                    class={`fw-tag-option ${selectedTags.includes(tag) ? 'fw-active' : ''}`}
+                    className={`fw-tag-option ${selectedTags.includes(tag) ? 'fw-active' : ''}`}
                     onClick={() => {
                       if (selectedTags.includes(tag)) {
                         setSelectedTags(selectedTags.filter((t) => t !== tag))
@@ -783,7 +786,7 @@ function FeedbackWidget({
           {normalizedRule.collect_email && (
             <input
               type="email"
-              class="fw-input"
+              className="fw-input"
               placeholder="Email Anda (opsional)"
               value={email}
               onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
@@ -791,14 +794,14 @@ function FeedbackWidget({
           )}
 
           <button
-            class="fw-submit-btn"
+            className="fw-submit-btn"
             disabled={loading || !canSubmit}
             onClick={handleFeedbackSubmit}
           >
             {loading ? 'Mengirim...' : 'Lanjut'}
           </button>
 
-          <button class="fw-back-btn" onClick={handleBackToRating}>
+          <button className="fw-back-btn" onClick={handleBackToRating}>
             Kembali
           </button>
         </div>
@@ -814,27 +817,29 @@ function FeedbackWidget({
       )
 
       return (
-        <div class="fw-screen fw-demographics-screen">
-          <h4 class="fw-title">{config.flow?.demographics_step?.title}</h4>
+        <div className="fw-screen fw-demographics-screen">
+          <h4 className="fw-title">{config.flow?.demographics_step?.title}</h4>
           {config.flow?.demographics_step?.subtitle && (
-            <p class="fw-subtitle">{config.flow?.demographics_step.subtitle}</p>
+            <p className="fw-subtitle">
+              {config.flow?.demographics_step.subtitle}
+            </p>
           )}
 
-          <div class="fw-fields">
+          <div className="fw-fields">
             {config.flow?.demographics_step?.fields?.map((field) => (
               <div key={field.key}>{renderDemographicField(field)}</div>
             ))}
           </div>
 
           <button
-            class="fw-submit-btn"
+            className="fw-submit-btn"
             disabled={loading || !allRequiredFilled}
             onClick={() => submitFeedback(selectedRating!)}
           >
             {loading ? 'Mengirim...' : 'Kirim'}
           </button>
 
-          <button class="fw-back-btn" onClick={handleBackToRating}>
+          <button className="fw-back-btn" onClick={handleBackToRating}>
             Kembali
           </button>
         </div>
@@ -843,12 +848,12 @@ function FeedbackWidget({
 
     if (step === 'success') {
       return (
-        <div class="fw-screen fw-success-screen">
-          <div class="fw-success-icon">✓</div>
-          <h4 class="fw-title">
+        <div className="fw-screen fw-success-screen">
+          <div className="fw-success-icon">✓</div>
+          <h4 className="fw-title">
             {config.flow?.success_step?.title || 'Terima Kasih!'}
           </h4>
-          <p class="fw-description">
+          <p className="fw-description">
             {config.flow?.success_step?.message ||
               'Masukan Anda membantu kami menjadi lebih baik.'}
           </p>
@@ -858,13 +863,13 @@ function FeedbackWidget({
               href={config.flow.success_step.cta_url || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              class="fw-cta-btn"
+              className="fw-cta-btn"
             >
               {config.flow?.success_step.cta_text || 'CTA'}
             </a>
           )}
 
-          <button class="fw-close-btn" onClick={handleClose}>
+          <button className="fw-close-btn" onClick={handleClose}>
             Tutup
           </button>
         </div>
@@ -875,11 +880,11 @@ function FeedbackWidget({
   }
 
   return (
-    <div class={getPositionClasses()}>
+    <div className={getPositionClasses()}>
       {/* Trigger Button */}
       {!isOpen && (
         <button
-          class={getButtonStyleClasses()}
+          className={getButtonStyleClasses()}
           onClick={() => setIsOpen(true)}
           aria-label="Buka feedback"
           style={{ backgroundColor: config.theme?.primary_color || '#6366f1' }}
@@ -892,14 +897,14 @@ function FeedbackWidget({
       {/* Widget Modal */}
       {isOpen && (
         <div
-          class="fw-modal"
+          className="fw-modal"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-          <div class="fw-modal-content">
+          <div className="fw-modal-content">
             {renderContent()}
 
             {config.behavior?.show_branding !== false && (
-              <div class="fw-branding">
+              <div className="fw-branding">
                 <span>Powered by FeedbackApp</span>
               </div>
             )}

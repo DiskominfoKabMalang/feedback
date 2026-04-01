@@ -86,7 +86,7 @@ export default async function ProjectsPage() {
     return {
       ...p,
       feedbackCount: stats?.feedbackCount || 0,
-      avgRating: stats?.avgRating,
+      avgRating: stats?.avgRating ?? null,
     }
   })
 

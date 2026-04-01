@@ -260,20 +260,24 @@ const DEFAULT_CONFIG: WidgetConfig = {
 }
 
 // Deep merge helper (outside component to avoid re-creation on each render)
-function mergeDeep<T>(target: T, source: Partial<T>): T {
+function mergeDeep<T extends object>(target: T, source: Partial<T>): T {
   const output = { ...target }
   for (const key in source) {
     if (
-      source[key] instanceof Object &&
+      typeof source[key] === 'object' &&
+      source[key] !== null &&
       !Array.isArray(source[key]) &&
-      key in output
+      key in output &&
+      typeof output[key] === 'object' &&
+      output[key] !== null &&
+      !Array.isArray(output[key])
     ) {
-      output[key] = mergeDeep(
-        output[key] as T,
-        source[key] as unknown as Partial<T>
+      ;(output as Record<string, unknown>)[key] = mergeDeep(
+        output[key] as object,
+        source[key] as Partial<object>
       )
     } else {
-      output[key] = source[key] as T[Extract<keyof T, string>]
+      ;(output as Record<string, unknown>)[key] = source[key]
     }
   }
   return output
@@ -327,8 +331,32 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     setConfig((prev) => ({
       ...prev,
       flow: {
-        ...prev.flow,
-        rating_step: { ...prev.flow?.rating_step, ...updates },
+        rating_step: {
+          ...(prev.flow?.rating_step ?? {
+            enabled: true,
+            type: 'emoji' as const,
+            scale: 5,
+            title: 'Rate us',
+          }),
+          ...updates,
+        },
+        feedback_step: prev.flow?.feedback_step ?? {
+          enabled: true,
+          logic_rules: [],
+        },
+        demographics_step: prev.flow?.demographics_step ?? {
+          enabled: false,
+          required: false,
+          title: 'Informasi Tambahan',
+          fields: [],
+        },
+        success_step: prev.flow?.success_step ?? {
+          enabled: true,
+          title: 'Terima kasih!',
+          message: 'Masukan Anda membantu kami menjadi lebih baik.',
+          auto_close_seconds: 5,
+          show_cta: false,
+        },
       },
     }))
   }
@@ -338,8 +366,29 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     setConfig((prev) => ({
       ...prev,
       flow: {
-        ...prev.flow,
-        feedback_step: { ...prev.flow?.feedback_step, ...updates },
+        rating_step: prev.flow?.rating_step ?? {
+          enabled: true,
+          type: 'emoji',
+          scale: 5,
+          title: 'Rate us',
+        },
+        feedback_step: {
+          ...(prev.flow?.feedback_step ?? { enabled: true, logic_rules: [] }),
+          ...updates,
+        },
+        demographics_step: prev.flow?.demographics_step ?? {
+          enabled: false,
+          required: false,
+          title: 'Informasi Tambahan',
+          fields: [],
+        },
+        success_step: prev.flow?.success_step ?? {
+          enabled: true,
+          title: 'Terima kasih!',
+          message: 'Masukan Anda membantu kami menjadi lebih baik.',
+          auto_close_seconds: 5,
+          show_cta: false,
+        },
       },
     }))
   }
@@ -436,8 +485,32 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     setConfig((prev) => ({
       ...prev,
       flow: {
-        ...prev.flow,
-        demographics_step: { ...prev.flow?.demographics_step, ...updates },
+        rating_step: prev.flow?.rating_step ?? {
+          enabled: true,
+          type: 'emoji',
+          scale: 5,
+          title: 'Rate us',
+        },
+        feedback_step: prev.flow?.feedback_step ?? {
+          enabled: true,
+          logic_rules: [],
+        },
+        demographics_step: {
+          ...(prev.flow?.demographics_step ?? {
+            enabled: false,
+            required: false,
+            title: 'Informasi Tambahan',
+            fields: [],
+          }),
+          ...updates,
+        },
+        success_step: prev.flow?.success_step ?? {
+          enabled: true,
+          title: 'Terima kasih!',
+          message: 'Masukan Anda membantu kami menjadi lebih baik.',
+          auto_close_seconds: 5,
+          show_cta: false,
+        },
       },
     }))
   }
@@ -479,8 +552,32 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
     setConfig((prev) => ({
       ...prev,
       flow: {
-        ...prev.flow,
-        success_step: { ...prev.flow?.success_step, ...updates },
+        rating_step: prev.flow?.rating_step ?? {
+          enabled: true,
+          type: 'emoji',
+          scale: 5,
+          title: 'Rate us',
+        },
+        feedback_step: prev.flow?.feedback_step ?? {
+          enabled: true,
+          logic_rules: [],
+        },
+        demographics_step: prev.flow?.demographics_step ?? {
+          enabled: false,
+          required: false,
+          title: 'Informasi Tambahan',
+          fields: [],
+        },
+        success_step: {
+          ...(prev.flow?.success_step ?? {
+            enabled: true,
+            title: 'Terima kasih!',
+            message: 'Masukan Anda membantu kami menjadi lebih baik.',
+            auto_close_seconds: 5,
+            show_cta: false,
+          }),
+          ...updates,
+        },
       },
     }))
   }
@@ -578,8 +675,10 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
                   <Label>Posisi Widget</Label>
                   <Select
                     value={config.theme?.position || 'bottom_right'}
-                    onValueChange={(value: WidgetTheme['position']) =>
-                      updateTheme({ position: value })
+                    onValueChange={(value) =>
+                      updateTheme({
+                        position: value as WidgetTheme['position'],
+                      })
                     }
                   >
                     <SelectTrigger>
@@ -598,8 +697,10 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
                   <Label>Style Tombol</Label>
                   <Select
                     value={config.theme?.button_style || 'pill'}
-                    onValueChange={(value: WidgetTheme['button_style']) =>
-                      updateTheme({ button_style: value })
+                    onValueChange={(value) =>
+                      updateTheme({
+                        button_style: value as WidgetTheme['button_style'],
+                      })
                     }
                   >
                     <SelectTrigger>

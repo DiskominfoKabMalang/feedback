@@ -22,7 +22,6 @@ async function assignSuperAdminRole() {
     .values({
       userId: 'c274ccc5-9a21-4d14-8a46-0e545821bd7b',
       roleId: superAdminRole[0].id,
-      assignedBy: 'system',
     })
     .onConflictDoNothing()
 

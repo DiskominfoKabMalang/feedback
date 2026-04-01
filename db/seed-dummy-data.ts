@@ -53,7 +53,7 @@ const dummyProjects = [
           cta_redirect: 'https://trustpilot.com/review/myshop',
         },
       ],
-    } as const,
+    },
     settings: {
       remove_branding: true,
       retention_days: 90,
@@ -86,7 +86,7 @@ const dummyProjects = [
           collect_email: false,
         },
       ],
-    } as const,
+    },
     settings: {
       remove_branding: true,
       retention_days: 365,
@@ -127,7 +127,7 @@ const dummyProjects = [
           cta_redirect: 'https://google.com/maps/review/myrestaurant',
         },
       ],
-    } as const,
+    },
     settings: {
       remove_branding: false,
       retention_days: 30,
@@ -168,7 +168,7 @@ const dummyProjects = [
           cta_redirect: 'https://apps.apple.com/app/reviews',
         },
       ],
-    } as const,
+    },
     settings: {
       remove_branding: true,
       retention_days: 180,
@@ -201,7 +201,7 @@ const dummyProjects = [
           collect_email: false,
         },
       ],
-    } as const,
+    },
     settings: {
       remove_branding: true,
       retention_days: 365,
@@ -770,9 +770,10 @@ async function seed() {
           tier: projectData.tier,
           domainWhitelist: projectData.domainWhitelist,
           apiKey: await generateApiKey(),
-          widgetConfig:
-            projectData.widgetConfig as typeof projectData.widgetConfig,
-          settings: projectData.settings as typeof projectData.settings,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          widgetConfig: projectData.widgetConfig as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          settings: projectData.settings as any,
         })
         .returning()
 
@@ -792,9 +793,11 @@ async function seed() {
         const randomDate = await createRandomDate(30) // Last 30 days
 
         await db.insert(feedbacks).values({
-          projectId,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          projectId: projectId as any,
           rating: fb.rating,
-          status: fb.status,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: fb.status as any,
           answers: {
             comment: fb.comment,
             email: fb.email,
@@ -812,7 +815,8 @@ async function seed() {
             ],
           },
           createdAt: randomDate,
-        })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
         totalFeedbacks++
       }
     }

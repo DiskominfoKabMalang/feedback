@@ -19,6 +19,8 @@ export async function getServerUser() {
     email: session.user.email,
     name: session.user.name,
     permissions: session.user.permissions || [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    roles: (session.user as any).roles || [],
   }
 }
 
@@ -158,7 +160,7 @@ export async function getServerUserRoles(): Promise<
 
   // Return cached roles from token if available
   if (user.roles) {
-    return user.roles.map((name) => ({
+    return user.roles.map((name: string) => ({
       id: '',
       name,
       isSystem: false,
