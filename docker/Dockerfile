@@ -34,9 +34,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/db ./db
 
-# Install production dependencies only (skip scripts like husky)
-RUN pnpm install --prod --no-optional --ignore-scripts
+# Install production dependencies with drizzle-kit for migrations
+RUN pnpm install --prod --no-optional --ignore-scripts && pnpm add -D drizzle-kit
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
