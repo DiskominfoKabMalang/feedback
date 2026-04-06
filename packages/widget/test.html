@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 2rem;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .test-info {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .test-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { margin-top: 0; }
+    </style>
+    <link rel="stylesheet" href="./dist/style.css">
+</head>
+<body>
+    <div class="test-content">
+        <div class="test-info">
+            <h1>Widget Local Test</h1>
+            <p><strong>Project ID:</strong> test-project-123</p>
+            <p><strong>API Endpoint:</strong> http://localhost:3000 (will fail, using defaults)</p>
+            <p>Open browser console (F12) to see widget initialization logs</p>
+        </div>
+
+        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2>Test Page Content</h2>
+            <p>This is sample content. The feedback button should appear in the bottom-right corner.</p>
+            <p>Click the "Feedback" button to open the widget.</p>
+        </div>
+    </div>
+
+    <!-- Load widget CSS -->
+    <link rel="stylesheet" href="./dist/style.css">
+
+    <!-- Load widget from local dist -->
+    <script src="./dist/widget.umd.js"></script>
+    <script>
+        console.log('Script loaded');
+        console.log('FeedbackWidget available:', typeof window.FeedbackWidget);
+
+        // Initialize widget with debug mode
+        if (window.FeedbackWidget) {
+            try {
+                window.FeedbackWidget.init({
+                    projectId: 'test-project-123',
+                    apiEndpoint: 'http://localhost:3000', // This will fail, widget will use defaults
+                    debug: true
+                });
+                console.log('Widget init called');
+            } catch (error) {
+                console.error('Widget init error:', error);
+            }
+        } else {
+            console.error('FeedbackWidget not found on window!');
+        }
+    </script>
+</body>
+</html>
