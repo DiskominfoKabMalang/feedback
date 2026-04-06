@@ -28,36 +28,11 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build application with error logging
-RUN pnpm build || (echo "=== BUILD FAILED ===" && cat .next/trace 2>/dev/null || true && exit 1)
+# Build application
+RUN pnpm build
 
 # -----------------------------------------------------------------------------
-# Stage 2: Migration Tools
-# -----------------------------------------------------------------------------
-FROM node:20-alpine AS migration
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY pnpm-lock.yaml ./
-
-# Install pnpm and dependencies
-RUN npm install -g pnpm@9.15.0
-RUN pnpm install --frozen-lockfile
-
-# Install drizzle-kit globally for easier access
-RUN pnpm add -D drizzle-kit && \
-    cp -r node_modules/.bin/drizzle-kit /usr/local/bin/ && \
-    cp -r node_modules/drizzle-kit /usr/local/lib/node_modules/
-
-# Copy migration files
-COPY drizzle.config.ts ./
-COPY drizzle ./drizzle
-COPY db ./db
-
-# -----------------------------------------------------------------------------
-# Stage 3: Production Runner
+# Stage 2: Production Runner
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS runner
 
@@ -71,13 +46,6 @@ ENV NODE_ENV=production \
 
 # Install dependencies for node-gyp if needed
 RUN apk add --no-cache libc6-compat
-
-# Copy drizzle-kit from migration stage
-COPY --from=migration /usr/local/bin/drizzle* /usr/local/bin/
-COPY --from=migration /usr/local/lib/node_modules/drizzle-kit /usr/local/lib/node_modules/drizzle-kit
-COPY --from=migration /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=migration /app/drizzle ./drizzle
-COPY --from=migration /app/db ./db
 
 # Copy application files from builder
 COPY --from=builder /app/public ./public
