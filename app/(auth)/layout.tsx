@@ -3,10 +3,10 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 
 const features = [
-  'Layanan Administrasi Kependudukan',
-  'Perizinan Usaha Online',
-  'Pembayaran Pajak & Retribusi',
-  'Pengaduan Masyarakat',
+  'Kumpulkan feedback pelanggan dengan mudah',
+  'Analisis sentiment dan rating secara real-time',
+  'Embed widget feedback ke website Anda',
+  'Dashboard analytics yang comprehensive',
 ]
 
 export default function AuthLayout({
@@ -26,19 +26,14 @@ export default function AuthLayout({
               className="group mb-6 inline-flex items-center gap-3"
             >
               <div className="shadow-primary/5 relative flex h-11 w-11 items-center justify-center rounded-xl bg-card shadow-lg ring-1 ring-border">
-                <Image
-                  src="/images/logo.png"
-                  alt="Naiera Logo"
-                  fill
-                  className="object-contain p-1.5"
-                />
+                <span className="text-primary text-xl font-bold">E</span>
               </div>
               <div>
                 <h1 className="group-hover:text-primary text-lg font-bold text-foreground transition-colors">
-                  Super App Naiera
+                  Echo
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  Kabupaten Naiera
+                  Feedback Platform
                 </p>
               </div>
             </Link>
@@ -50,12 +45,12 @@ export default function AuthLayout({
       </div>
 
       {/* Right Side - Decorative Panel */}
-      <div className="from-primary relative hidden items-center justify-center overflow-hidden bg-gradient-to-br via-teal-600 to-cyan-700 p-12 lg:flex lg:flex-1">
+      <div className="from-primary relative hidden items-center justify-center overflow-hidden bg-gradient-to-br via-blue-600 to-indigo-700 p-12 lg:flex lg:flex-1">
         {/* Decorative Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -right-24 -bottom-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-400/10 blur-2xl" />
+          <div className="absolute -right-24 -bottom-24 h-96 w-96 rounded-full bg-blue-400/20 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-400/10 blur-2xl" />
         </div>
 
         {/* Grid Pattern Overlay */}
@@ -68,12 +63,13 @@ export default function AuthLayout({
 
         <div className="relative z-10 max-w-lg text-white">
           <h2 className="mb-4 text-3xl leading-tight font-bold xl:text-4xl">
-            Akses Semua Layanan dalam{' '}
-            <span className="text-cyan-200">Satu Aplikasi</span>
+            Kumpulkan{' '}
+            <span className="text-blue-200">Feedback yang Penting</span>
           </h2>
           <p className="mb-8 text-base leading-relaxed text-white/80 xl:text-lg">
-            Lebih dari 100+ layanan pemerintahan Kabupaten Naiera siap melayani
-            Anda 24/7 dengan cepat, mudah, dan aman.
+            Platform feedback modern yang membantu Anda memahami pelanggan,
+            mengumpulkan insight, dan meningkatkan produk dengan cara yang
+            sederhana dan powerful.
           </p>
 
           <div className="space-y-3">
@@ -82,7 +78,7 @@ export default function AuthLayout({
                 key={i}
                 className="flex items-center gap-3 text-sm text-white/90 xl:text-base"
               >
-                <Check size={16} className="shrink-0 text-cyan-300" />
+                <Check size={16} className="shrink-0 text-blue-300" />
                 <span>{item}</span>
               </div>
             ))}
@@ -90,7 +86,9 @@ export default function AuthLayout({
 
           <div className="mt-10 rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
             <p className="mb-1 text-xs text-white/70">Dipercaya oleh</p>
-            <p className="text-2xl font-bold xl:text-3xl">50.000+ Pengguna</p>
+            <p className="text-2xl font-bold xl:text-3xl">
+              1000+ Tim & Bisnis
+            </p>
           </div>
         </div>
       </div>

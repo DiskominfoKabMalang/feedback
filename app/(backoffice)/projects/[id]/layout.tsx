@@ -37,7 +37,7 @@ function ProjectHeaderSkeleton() {
           href="/projects"
           className="text-muted-foreground hover:underline"
         >
-          Projects
+          Proyek
         </Link>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
         <div className="h-4 w-32 bg-muted animate-pulse rounded" />

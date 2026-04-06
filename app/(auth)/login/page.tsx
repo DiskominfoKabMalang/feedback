@@ -12,7 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertCircle,
   ArrowRight,
-  Check,
   Eye,
   EyeOff,
   Loader2,
@@ -21,8 +20,8 @@ import {
 } from 'lucide-react'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Email tidak valid'),
+  password: z.string().min(1, 'Password wajib diisi'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -36,7 +35,6 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
 
-  // Check for error from NextAuth
   useEffect(() => {
     const errorParam = searchParams.get('error')
     if (errorParam === 'CredentialsSignin') {
@@ -70,10 +68,9 @@ function LoginForm() {
         return
       }
 
-      // Redirect on success
       router.push(callbackUrl)
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('Terjadi kesalahan. Silakan coba lagi.')
       setIsLoading(false)
     }
   }
@@ -85,7 +82,7 @@ function LoginForm() {
           Selamat Datang Kembali
         </h2>
         <p className="text-sm text-muted-foreground sm:text-base">
-          Masuk untuk mengakses layanan digital Kabupaten Naiera
+          Masuk untuk mengakses dashboard Echo Anda
         </p>
       </div>
 
@@ -106,17 +103,17 @@ function LoginForm() {
             htmlFor="email"
             className="mb-2 block text-sm font-medium text-foreground"
           >
-            Email atau NIK
+            Email atau Username
           </label>
           <div className="relative">
             <Mail
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type="text"
               id="email"
-              placeholder="Masukkan email atau NIK"
+              placeholder="Masukkan email atau username"
               className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('email')}
             />
@@ -139,7 +136,7 @@ function LoginForm() {
           <div className="relative">
             <Lock
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type={showPassword ? 'text' : 'password'}
@@ -151,7 +148,7 @@ function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              className="text-muted-foreground absolute top-1/2 right-3.5 -translate-y-1/2 transition-colors hover:text-foreground"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -173,10 +170,19 @@ function LoginForm() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="peer checked:border-primary checked:bg-primary focus:ring-primary/20 h-4 w-4 cursor-pointer appearance-none rounded border border-input bg-card transition-colors focus:ring-2 focus:outline-none"
               />
-              <Check
-                size={12}
+              <svg
                 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary-foreground opacity-0 peer-checked:opacity-100"
-              />
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             </div>
             <span className="text-sm text-muted-foreground">Ingat saya</span>
           </label>
@@ -255,7 +261,7 @@ function LoginForm() {
               <path d="M15 12h2" />
               <path d="M7 16h10" />
             </svg>
-            E-KTP
+            GitHub
           </button>
         </div>
       </form>

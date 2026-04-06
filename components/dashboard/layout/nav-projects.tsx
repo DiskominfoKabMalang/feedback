@@ -40,7 +40,7 @@ export function NavProjects({
   return (
     <SidebarGroup className="py-2">
       <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
-        Projects
+        Proyek
       </SidebarGroupLabel>
       <SidebarMenu className="mt-1">
         {projects.map((item) => {
@@ -71,7 +71,7 @@ export function NavProjects({
                   <DropdownMenuItem asChild>
                     <Link href={item.url} className="cursor-pointer text-sm">
                       <Folder className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>View Project</span>
+                      <span>Lihat Proyek</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -80,7 +80,7 @@ export function NavProjects({
                       className="cursor-pointer text-sm"
                     >
                       <Share2 className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Installation</span>
+                      <span>Instalasi</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -90,7 +90,7 @@ export function NavProjects({
                       className="cursor-pointer text-sm"
                     >
                       <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Settings</span>
+                      <span>Pengaturan</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -102,7 +102,7 @@ export function NavProjects({
           <SidebarMenuButton asChild>
             <Link href="/projects" className="gap-3">
               <MoreHorizontal className="h-4 w-4 text-sidebar-foreground/50" />
-              <span className="text-sm font-medium">View All Projects</span>
+              <span className="text-sm font-medium">Lihat Semua Proyek</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

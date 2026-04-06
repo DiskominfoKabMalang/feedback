@@ -78,7 +78,8 @@ export default async function DashboardPage() {
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user.name || user.email?.split('@')[0] || 'User'}!
+          Selamat datang kembali,{' '}
+          {user.name || user.email?.split('@')[0] || 'Pengguna'}!
         </p>
       </div>
 
@@ -87,7 +88,7 @@ export default async function DashboardPage() {
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Total Projects
+              Total Proyek
             </p>
             <Briefcase className="text-muted-foreground h-5 w-5" />
           </div>
@@ -95,14 +96,14 @@ export default async function DashboardPage() {
             {totalProjects}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            {activeProjects} active in last 30 days
+            {activeProjects} aktif dalam 30 hari terakhir
           </p>
         </div>
 
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Total Feedbacks
+              Total Feedback
             </p>
             <MessageSquare className="text-muted-foreground h-5 w-5" />
           </div>
@@ -110,14 +111,14 @@ export default async function DashboardPage() {
             {totalFeedbacks}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Across all your projects
+            Dari semua proyek Anda
           </p>
         </div>
 
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Average Rating
+              Rating Rata-rata
             </p>
             <Star className="text-muted-foreground h-5 w-5" />
           </div>
@@ -125,14 +126,14 @@ export default async function DashboardPage() {
             {avgRating > 0 ? avgRating.toFixed(1) : '-'}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            {avgRating > 0 ? 'out of 5.0' : 'No ratings yet'}
+            {avgRating > 0 ? 'dari 5.0' : 'Belum ada rating'}
           </p>
         </div>
 
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Active Projects
+              Proyek Aktif
             </p>
             <Briefcase className="text-muted-foreground h-5 w-5" />
           </div>
@@ -140,7 +141,7 @@ export default async function DashboardPage() {
             {activeProjects}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            With feedback in last 30 days
+            Dengan feedback dalam 30 hari terakhir
           </p>
         </div>
       </div>
@@ -150,9 +151,9 @@ export default async function DashboardPage() {
         {/* Account Info Card */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Account Information</CardTitle>
+            <CardTitle>Informasi Akun</CardTitle>
             <CardDescription>
-              Your profile details and account settings
+              Detail profil dan pengaturan akun Anda
             </CardDescription>
           </CardHeader>
           <Separator />
@@ -161,9 +162,9 @@ export default async function DashboardPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <UserIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Name</span>
+                  <span className="text-sm font-medium">Nama</span>
                 </div>
-                <p className="text-base">{user.name || 'Not set'}</p>
+                <p className="text-base">{user.name || 'Belum diatur'}</p>
               </div>
 
               <div className="space-y-2">
@@ -177,7 +178,7 @@ export default async function DashboardPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span className="text-sm font-medium">User ID</span>
+                  <span className="text-sm font-medium">ID Pengguna</span>
                 </div>
                 <p
                   className="truncate text-base font-mono text-xs"
@@ -193,8 +194,8 @@ export default async function DashboardPage() {
         {/* Quick Actions Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Frequently used</CardDescription>
+            <CardTitle>Aksi Cepat</CardTitle>
+            <CardDescription>Sering digunakan</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mt-2 space-y-2">
@@ -203,21 +204,21 @@ export default async function DashboardPage() {
                 className="bg-background hover:bg-muted/50 flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors"
               >
                 <Briefcase className="text-primary h-5 w-5" />
-                <span className="text-sm font-medium">My Projects</span>
+                <span className="text-sm font-medium">Proyek Saya</span>
               </Link>
               <Link
                 href="/profile"
                 className="bg-background hover:bg-muted/50 flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors"
               >
                 <UserIcon className="text-primary h-5 w-5" />
-                <span className="text-sm font-medium">Profile Settings</span>
+                <span className="text-sm font-medium">Pengaturan Profil</span>
               </Link>
               <Link
                 href="/users"
                 className="bg-background hover:bg-muted/50 flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors"
               >
                 <UserIcon className="text-primary h-5 w-5" />
-                <span className="text-sm font-medium">User Management</span>
+                <span className="text-sm font-medium">Manajemen Pengguna</span>
               </Link>
             </div>
           </CardContent>

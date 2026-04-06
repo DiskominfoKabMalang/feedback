@@ -8,38 +8,38 @@ import { cn } from '@/lib/utils'
 const tabs = [
   {
     value: 'overview',
-    label: 'Overview',
+    label: 'Ringkasan',
     href: 'overview',
     icon: Layout,
-    description: 'Project statistics and analytics',
+    description: 'Statistik dan analitik proyek',
   },
   {
     value: 'inbox',
-    label: 'Inbox',
+    label: 'Kotak Masuk',
     href: 'inbox',
     icon: MessageSquare,
-    description: 'View and manage feedback',
+    description: 'Lihat dan kelola feedback',
   },
   {
     value: 'builder',
     label: 'Widget Builder',
     href: 'builder',
     icon: Code,
-    description: 'Customize your feedback widget',
+    description: 'Kustomisasi widget feedback',
   },
   {
     value: 'install',
-    label: 'Install',
+    label: 'Instalasi',
     href: 'install',
     icon: Download,
-    description: 'Integration instructions',
+    description: 'Panduan integrasi',
   },
   {
     value: 'settings',
-    label: 'Settings',
+    label: 'Pengaturan',
     href: 'settings',
     icon: Settings,
-    description: 'Project configuration',
+    description: 'Konfigurasi proyek',
   },
 ]
 

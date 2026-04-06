@@ -110,9 +110,9 @@ export default async function ProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Proyek</h1>
           <p className="text-muted-foreground">
-            Manage your feedback projects and widgets
+            Kelola proyek dan widget feedback Anda
           </p>
         </div>
         <CreateProjectDialog />
@@ -123,7 +123,7 @@ export default async function ProjectsPage() {
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Total Projects
+              Total Proyek
             </p>
           </div>
           <p className="mt-3 text-3xl font-bold">{totalProjects}</p>
@@ -141,7 +141,7 @@ export default async function ProjectsPage() {
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm font-medium">
-              Avg Rating
+              Rating Rata-rata
             </p>
           </div>
           <p className="mt-3 text-3xl font-bold">
@@ -153,9 +153,9 @@ export default async function ProjectsPage() {
       {/* Projects Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Your Projects</CardTitle>
+          <CardTitle>Proyek Anda</CardTitle>
           <CardDescription>
-            View and manage all your feedback projects
+            Lihat dan kelola semua proyek feedback Anda
           </CardDescription>
         </CardHeader>
         <CardContent>

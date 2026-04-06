@@ -45,6 +45,7 @@ import {
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { id } from 'date-fns/locale'
 
 interface FeedbackInboxClientProps {
   projectId: string
@@ -88,7 +89,7 @@ export function FeedbackInboxClient({
         }
       } catch (error) {
         console.error('Error fetching feedbacks:', error)
-        toast.error('Failed to load feedbacks')
+        toast.error('Gagal memuat feedback')
       } finally {
         if (mountedRef.current) {
           setIsLoading(false)
@@ -124,15 +125,15 @@ export function FeedbackInboxClient({
 
         if (!response.ok) {
           const error = await response.json()
-          throw new Error(error.error || 'Failed to update status')
+          throw new Error(error.error || 'Gagal mengubah status')
         }
 
-        toast.success(`Marked as ${newStatus}`)
+        toast.success(`Ditandai sebagai ${newStatus}`)
         fetchFeedbacks(initialFilters)
       } catch (error) {
         console.error('Error updating status:', error)
         toast.error(
-          error instanceof Error ? error.message : 'Failed to update status'
+          error instanceof Error ? error.message : 'Gagal mengubah status'
         )
       }
     },
@@ -143,7 +144,7 @@ export function FeedbackInboxClient({
   const handleDelete = useCallback(
     async (feedback: Feedback) => {
       const confirmed = window.confirm(
-        'Are you sure you want to delete this feedback?'
+        'Apakah Anda yakin ingin menghapus feedback ini?'
       )
       if (!confirmed) return
 
@@ -157,15 +158,15 @@ export function FeedbackInboxClient({
 
         if (!response.ok) {
           const error = await response.json()
-          throw new Error(error.error || 'Failed to delete feedback')
+          throw new Error(error.error || 'Gagal menghapus feedback')
         }
 
-        toast.success('Feedback deleted')
+        toast.success('Feedback dihapus')
         fetchFeedbacks(initialFilters)
       } catch (error) {
         console.error('Error deleting feedback:', error)
         toast.error(
-          error instanceof Error ? error.message : 'Failed to delete feedback'
+          error instanceof Error ? error.message : 'Gagal menghapus feedback'
         )
       }
     },
@@ -194,11 +195,11 @@ export function FeedbackInboxClient({
           )
         )
 
-        toast.success(`${selectedFeedbacks.length} feedback(s) archived`)
+        toast.success(`${selectedFeedbacks.length} feedback diarsipkan`)
         fetchFeedbacks(initialFilters)
       } catch (error) {
         console.error('Error archiving feedbacks:', error)
-        toast.error('Failed to archive feedbacks')
+        toast.error('Gagal mengarsipkan feedback')
       }
     },
     [initialFilters, fetchFeedbacks]
@@ -210,7 +211,7 @@ export function FeedbackInboxClient({
       if (selectedFeedbacks.length === 0) return
 
       const confirmed = window.confirm(
-        `Delete ${selectedFeedbacks.length} feedback(s)?`
+        `Hapus ${selectedFeedbacks.length} feedback?`
       )
       if (!confirmed) return
 
@@ -223,11 +224,11 @@ export function FeedbackInboxClient({
           )
         )
 
-        toast.success(`${selectedFeedbacks.length} feedback(s) deleted`)
+        toast.success(`${selectedFeedbacks.length} feedback dihapus`)
         fetchFeedbacks(initialFilters)
       } catch (error) {
         console.error('Error deleting feedbacks:', error)
-        toast.error('Failed to delete feedbacks')
+        toast.error('Gagal menghapus feedback')
       }
     },
     [initialFilters, fetchFeedbacks]
@@ -249,11 +250,11 @@ export function FeedbackInboxClient({
           )
         )
 
-        toast.success(`${selectedFeedbacks.length} feedback(s) marked as read`)
+        toast.success(`${selectedFeedbacks.length} feedback ditandai sebagai dibaca`)
         fetchFeedbacks(initialFilters)
       } catch (error) {
         console.error('Error updating feedbacks:', error)
-        toast.error('Failed to update feedbacks')
+        toast.error('Gagal mengubah feedback')
       }
     },
     [initialFilters, fetchFeedbacks]
@@ -268,19 +269,25 @@ export function FeedbackInboxClient({
 
   // Build rating filter options (static 1-5 stars)
   const ratingOptions = [
-    { label: '5 Stars', value: '5' },
-    { label: '4 Stars', value: '4' },
-    { label: '3 Stars', value: '3' },
-    { label: '2 Stars', value: '2' },
-    { label: '1 Star', value: '1' },
+    { label: '5 Bintang', value: '5' },
+    { label: '4 Bintang', value: '4' },
+    { label: '3 Bintang', value: '3' },
+    { label: '2 Bintang', value: '2' },
+    { label: '1 Bintang', value: '1' },
   ]
 
   // Build status filter options
   const statusOptions = [
-    { label: 'New', value: 'new' },
-    { label: 'Read', value: 'read' },
-    { label: 'Archived', value: 'archived' },
+    { label: 'Baru', value: 'new' },
+    { label: 'Dibaca', value: 'read' },
+    { label: 'Diarsipkan', value: 'archived' },
   ]
+
+  const statusLabels: Record<string, string> = {
+    new: 'Baru',
+    read: 'Dibaca',
+    archived: 'Diarsipkan',
+  }
 
   return (
     <div className="space-y-6">
@@ -289,10 +296,10 @@ export function FeedbackInboxClient({
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Inbox className="h-6 w-6" />
-            Feedback Inbox
+            Kotak Masuk Feedback
           </h2>
           <p className="text-muted-foreground">
-            View and manage all feedback from your users
+            Lihat dan kelola semua feedback dari pengguna
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -302,11 +309,11 @@ export function FeedbackInboxClient({
             onClick={() => fetchFeedbacks(initialFilters)}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            Segarkan
           </Button>
           <Button variant="outline" size="sm">
             <Download className="mr-2 h-4 w-4" />
-            Export CSV
+            Ekspor CSV
           </Button>
         </div>
       </div>
@@ -327,7 +334,7 @@ export function FeedbackInboxClient({
             <CardTitle className="text-2xl font-semibold tabular-nums">
               {data.filter((f) => f.status === 'new').length}
             </CardTitle>
-            <CardDescription>New</CardDescription>
+            <CardDescription>Baru</CardDescription>
           </CardHeader>
         </Card>
 
@@ -336,7 +343,7 @@ export function FeedbackInboxClient({
             <CardTitle className="text-2xl font-semibold tabular-nums">
               {data.filter((f) => f.rating >= 4).length}
             </CardTitle>
-            <CardDescription>Positive (4-5)</CardDescription>
+            <CardDescription>Positif (4-5)</CardDescription>
           </CardHeader>
         </Card>
 
@@ -345,7 +352,7 @@ export function FeedbackInboxClient({
             <CardTitle className="text-2xl font-semibold tabular-nums">
               {data.filter((f) => f.rating <= 2).length}
             </CardTitle>
-            <CardDescription>Negative (1-2)</CardDescription>
+            <CardDescription>Negatif (1-2)</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -353,15 +360,15 @@ export function FeedbackInboxClient({
       {/* Data Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Feedback</CardTitle>
-          <CardDescription>Manage and respond to user feedback</CardDescription>
+          <CardTitle>Semua Feedback</CardTitle>
+          <CardDescription>Kelola dan tanggapi feedback pengguna</CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
             columns={columns}
             data={data}
             filterKey="comment"
-            toolbarPlaceholder="Search feedback..."
+            toolbarPlaceholder="Cari feedback..."
             isLoading={isLoading}
             facetedFilters={[
               {
@@ -389,7 +396,7 @@ export function FeedbackInboxClient({
                   }}
                 >
                   <ActionBarSelection>
-                    {selectedRows.length} selected
+                    {selectedRows.length} dipilih
                   </ActionBarSelection>
                   <ActionBarSeparator />
                   <ActionBarGroup>
@@ -397,20 +404,20 @@ export function FeedbackInboxClient({
                       onSelect={() => handleBulkMarkRead(selectedFeedbacks)}
                     >
                       <Check className="mr-2 h-4 w-4" />
-                      Mark as Read
+                      Tandai Dibaca
                     </ActionBarItem>
                     <ActionBarItem
                       onSelect={() => handleBulkArchive(selectedFeedbacks)}
                     >
                       <Archive className="mr-2 h-4 w-4" />
-                      Archive
+                      Arsipkan
                     </ActionBarItem>
                     <ActionBarItem
                       className="text-destructive focus:text-destructive"
                       onSelect={() => handleBulkDelete(selectedFeedbacks)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      Hapus
                     </ActionBarItem>
                   </ActionBarGroup>
                   <ActionBarClose>
@@ -429,7 +436,7 @@ export function FeedbackInboxClient({
           {selectedFeedback && (
             <>
               <DrawerHeader>
-                <DrawerTitle>Feedback Details</DrawerTitle>
+                <DrawerTitle>Detail Feedback</DrawerTitle>
               </DrawerHeader>
               <div className="p-6 space-y-6">
                 {/* Rating */}
@@ -459,7 +466,7 @@ export function FeedbackInboxClient({
                 {selectedFeedback.answers?.comment && (
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
-                      Comment
+                      Komentar
                     </span>
                     <p className="mt-1 text-sm leading-relaxed">
                       {selectedFeedback.answers.comment}
@@ -472,7 +479,7 @@ export function FeedbackInboxClient({
                   selectedFeedback.answers.tags.length > 0 && (
                     <div>
                       <span className="text-sm font-medium text-muted-foreground">
-                        Tags
+                        Tag
                       </span>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {selectedFeedback.answers.tags.map((tag) => (
@@ -507,7 +514,7 @@ export function FeedbackInboxClient({
                       {selectedFeedback.meta.url && (
                         <div className="flex items-center gap-2 text-sm">
                           <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground">Source:</span>
+                          <span className="text-muted-foreground">Sumber:</span>
                           <span className="truncate">
                             {selectedFeedback.meta.url}
                           </span>
@@ -543,7 +550,7 @@ export function FeedbackInboxClient({
                       }
                       className="capitalize"
                     >
-                      {selectedFeedback.status}
+                      {statusLabels[selectedFeedback.status] || selectedFeedback.status}
                     </Badge>
                   </div>
                 </div>
@@ -552,11 +559,12 @@ export function FeedbackInboxClient({
                 <div>
                   <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
-                    Received
+                    Diterima
                   </span>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(selectedFeedback.createdAt), {
                       addSuffix: true,
+                      locale: id,
                     })}
                   </p>
                 </div>
@@ -572,7 +580,7 @@ export function FeedbackInboxClient({
                       }}
                     >
                       <Check className="mr-2 h-4 w-4" />
-                      Mark as Read
+                      Tandai Dibaca
                     </Button>
                   )}
                   <Button
@@ -584,7 +592,7 @@ export function FeedbackInboxClient({
                     }}
                   >
                     <Archive className="mr-2 h-4 w-4" />
-                    Archive
+                    Arsipkan
                   </Button>
                   <Button
                     size="sm"
@@ -595,7 +603,7 @@ export function FeedbackInboxClient({
                     }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    Hapus
                   </Button>
                 </div>
               </div>

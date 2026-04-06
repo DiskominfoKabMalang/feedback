@@ -21,25 +21,25 @@ import {
 
 const registerSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().min(2, 'Nama minimal 2 karakter'),
     username: z
       .string()
-      .min(3, 'Username must be at least 3 characters')
+      .min(3, 'Username minimal 3 karakter')
       .regex(
         /^[a-zA-Z0-9_]+$/,
-        'Username can only contain letters, numbers, and underscores'
+        'Username hanya boleh berisi huruf, angka, dan underscore'
       ),
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Email tidak valid'),
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
+      .min(8, 'Password minimal 8 karakter')
+      .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf kapital')
+      .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
+      .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: 'Password tidak cocok',
     path: ['confirmPassword'],
   })
 
@@ -82,13 +82,13 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Registration failed')
+        setError(data.error || 'Pendaftaran gagal')
         return
       }
 
       router.push('/login?registered=true')
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
       setIsLoading(false)
     }
@@ -96,12 +96,12 @@ export default function RegisterPage() {
 
   return (
     <>
-      <div className="mb-6">
-        <h2 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
-          Buat Akun Baru
-        </h2>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Daftar untuk mengakses layanan digital Kabupaten Naiera
+      <div className="mb-8">
+        <h1 className="text-foreground mb-2 text-2xl font-bold sm:text-3xl">
+          Buat akun baru
+        </h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
+          Mulai kumpulkan feedback dalam hitungan menit
         </p>
       </div>
 
@@ -120,25 +120,25 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="name"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Nama Lengkap
           </label>
           <div className="relative">
             <User
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type="text"
               id="name"
               placeholder="Masukkan nama lengkap"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('name')}
             />
           </div>
           {form.formState.errors.name && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.name.message}
             </p>
           )}
@@ -148,24 +148,24 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="username"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Username
           </label>
           <div className="relative">
-            <span className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground">
+            <span className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2">
               @
             </span>
             <input
               type="text"
               id="username"
-              placeholder="Masukkan username"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              placeholder="username"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('username')}
             />
           </div>
           {form.formState.errors.username && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.username.message}
             </p>
           )}
@@ -175,25 +175,25 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Email
           </label>
           <div className="relative">
             <Mail
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type="email"
               id="email"
-              placeholder="Masukkan email"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              placeholder="Masukkan email Anda"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-4 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('email')}
             />
           </div>
           {form.formState.errors.email && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.email.message}
             </p>
           )}
@@ -203,32 +203,32 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="password"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Password
           </label>
           <div className="relative">
             <Lock
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type={showPassword ? 'text' : 'password'}
               id="password"
-              placeholder="Masukkan password"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              placeholder="Buat password"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('password')}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 right-3.5 -translate-y-1/2 transition-colors hover:text-foreground"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {form.formState.errors.password && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.password.message}
             </p>
           )}
@@ -238,32 +238,32 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="confirmPassword"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Konfirmasi Password
           </label>
           <div className="relative">
             <Lock
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
-              placeholder="Konfirmasi password"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              placeholder="Konfirmasi password Anda"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('confirmPassword')}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 right-3.5 -translate-y-1/2 transition-colors hover:text-foreground"
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {form.formState.errors.confirmPassword && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.confirmPassword.message}
             </p>
           )}
@@ -273,19 +273,19 @@ export default function RegisterPage() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-primary hover:bg-primary/90 shadow-primary/25 hover:shadow-primary/40 h-12 w-full rounded-lg text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-300 disabled:opacity-50"
+          className="h-12 w-full rounded-lg text-sm font-semibold shadow-lg transition-all duration-300 disabled:opacity-50"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? 'Memproses...' : 'Daftar Sekarang'}
+          {isLoading ? 'Memproses...' : 'Daftar'}
         </Button>
       </form>
 
       {/* Login Link */}
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-8 text-center text-sm">
         Sudah punya akun?{' '}
         <Link
           href="/login"
-          className="group text-primary hover:text-primary/80 inline-flex items-center gap-1 font-semibold transition-colors"
+          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 font-semibold transition-colors"
         >
           <ArrowLeft
             size={14}

@@ -56,17 +56,17 @@ export function CreateProjectDialog() {
     e.preventDefault()
 
     if (!name.trim()) {
-      toast.error('Project name is required')
+      toast.error('Nama proyek wajib diisi')
       return
     }
 
     if (!slug.trim()) {
-      toast.error('Slug is required')
+      toast.error('Slug wajib diisi')
       return
     }
 
     if (domains.length === 0) {
-      toast.error('At least one domain is required')
+      toast.error('Minimal satu domain wajib ditambahkan')
       return
     }
 
@@ -86,7 +86,7 @@ export function CreateProjectDialog() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success('Project created successfully!')
+        toast.success('Proyek berhasil dibuat!')
         setOpen(false)
         router.push(`/projects/${data.data.id}`)
         // Reset form
@@ -94,10 +94,10 @@ export function CreateProjectDialog() {
         setSlug('')
         setDomains([])
       } else {
-        toast.error(data.error || 'Failed to create project')
+        toast.error(data.error || 'Gagal membuat proyek')
       }
     } catch {
-      toast.error('Failed to create project')
+      toast.error('Gagal membuat proyek')
     } finally {
       setLoading(false)
     }
@@ -108,15 +108,15 @@ export function CreateProjectDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          New Project
+          Proyek Baru
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle>Buat Proyek Baru</DialogTitle>
             <DialogDescription>
-              Create a new feedback project. You can customize the widget later.
+              Buat proyek feedback baru. Anda bisa mengkustomisasi widget nanti.
             </DialogDescription>
           </DialogHeader>
 
@@ -124,13 +124,13 @@ export function CreateProjectDialog() {
             {/* Project Name */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                Project Name <span className="text-destructive">*</span>
+                Nama Proyek <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="My Feedback Project"
+                placeholder="Proyek Feedback Saya"
                 required
               />
             </div>
@@ -146,24 +146,24 @@ export function CreateProjectDialog() {
                   id="slug"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  placeholder="my-feedback-project"
+                  placeholder="proyek-feedback-saya"
                   pattern="[a-z0-9-]+"
                   required
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Only lowercase letters, numbers, and hyphens. Used for public
-                links.
+                Hanya huruf kecil, angka, dan tanda hubung. Digunakan untuk
+                tautan publik.
               </p>
             </div>
 
             {/* Domain Whitelist */}
             <div className="space-y-2">
               <Label>
-                Domain Whitelist <span className="text-destructive">*</span>
+                Daftar Domain <span className="text-destructive">*</span>
               </Label>
               <p className="text-xs text-muted-foreground">
-                Add domains where your widget is allowed to run
+                Tambahkan domain tempat widget diizinkan berjalan
               </p>
               <div className="flex gap-2">
                 <Input
@@ -180,7 +180,7 @@ export function CreateProjectDialog() {
                   size="sm"
                   onClick={addDomain}
                 >
-                  Add
+                  Tambah
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -198,7 +198,7 @@ export function CreateProjectDialog() {
                 ))}
                 {domains.length === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    No domains added yet
+                    Belum ada domain yang ditambahkan
                   </p>
                 )}
               </div>
@@ -212,10 +212,10 @@ export function CreateProjectDialog() {
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Project'}
+              {loading ? 'Memproses...' : 'Buat Proyek'}
             </Button>
           </DialogFooter>
         </form>

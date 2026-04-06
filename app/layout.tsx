@@ -1,76 +1,62 @@
 import type { Metadata } from 'next'
-import { Inter, Merriweather, Fira_Code } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 
-const interSans = Inter({
+const inter = Inter({
   variable: '--font-inter',
-  subsets: ['latin'],
-  display: 'swap',
-})
-
-const merriweatherSerif = Merriweather({
-  variable: '--font-merriweather',
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '700'],
-})
-
-const firaMono = Fira_Code({
-  variable: '--font-fira-code',
   subsets: ['latin'],
   display: 'swap',
 })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Bandanaiera',
-    template: '%s | Bandanaiera',
+    default: 'Echo - Collect Feedback That Matters',
+    template: '%s | Echo',
   },
   icons: {
-    icon: '/images/logo.png',
-    shortcut: '/images/logo.png',
-    apple: '/images/logo.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   description:
-    'A modern Next.js fullstack boilerplate with authentication, database, and RBAC built-in',
+    'A simple, powerful way to collect and manage customer feedback. Build forms, gather insights, and improve your product.',
   keywords: [
-    'Next.js',
-    'React',
-    'TypeScript',
-    'Tailwind CSS',
-    'Drizzle ORM',
-    'Boilerplate',
+    'Feedback',
+    'Customer Feedback',
+    'NPS',
+    'Survey',
+    'Form Builder',
+    'Product Feedback',
   ],
-  authors: [{ name: 'Bandanaiera' }],
-  creator: 'Bandanaiera',
+  authors: [{ name: 'Echo' }],
+  creator: 'Echo',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_APP_URL || 'https://echofeedback.com'
   ),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    title: 'Bandanaiera',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://echofeedback.com',
+    title: 'Echo - Collect Feedback That Matters',
     description:
-      'A modern Next.js fullstack boilerplate with authentication, database, and RBAC built-in',
-    siteName: 'Bandanaiera',
+      'A simple, powerful way to collect and manage customer feedback. Build forms, gather insights, and improve your product.',
+    siteName: 'Echo',
     images: [
       {
         url: '/og.png',
         width: 1200,
         height: 630,
-        alt: 'Bandanaiera',
+        alt: 'Echo',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Bandanaiera',
+    title: 'Echo - Collect Feedback That Matters',
     description:
-      'A modern Next.js fullstack boilerplate with authentication, database, and RBAC built-in',
+      'A simple, powerful way to collect and manage customer feedback. Build forms, gather insights, and improve your product.',
     images: ['/og.png'],
-    creator: '@bandanaiera',
   },
   robots: {
     index: true,
@@ -83,9 +69,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
-  },
 }
 
 export default function RootLayout({
@@ -97,7 +80,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${interSans.variable} ${merriweatherSerif.variable} ${firaMono.variable}`}
+      className={`${inter.variable}`}
     >
       <body className="font-sans antialiased">
         <ThemeProvider

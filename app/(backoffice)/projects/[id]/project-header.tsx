@@ -39,7 +39,7 @@ export async function ProjectHeader({ projectId }: ProjectHeaderProps) {
     <div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
         <Link href="/projects" className="hover:underline">
-          Projects
+          Proyek
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span>{projectData.name}</span>

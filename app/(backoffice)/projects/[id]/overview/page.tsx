@@ -27,9 +27,9 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Recent Feedback</CardTitle>
+              <CardTitle>Feedback Terbaru</CardTitle>
               <p className="text-muted-foreground text-sm mt-1">
-                See what your users are saying
+                Lihat apa yang pengguna katakan
               </p>
             </div>
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">

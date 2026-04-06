@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { AppSidebar } from '@/components/dashboard/layout/app-sidebar'
 import { HeaderNotifications } from '@/components/dashboard/layout/header-notifications'
 import { HeaderUser } from '@/components/dashboard/layout/header-user'
+import { Toaster } from '@/components/ui/sonner'
 import {
   SidebarInset,
   SidebarProvider,
@@ -62,7 +63,7 @@ export default async function BackofficeLayout({
           <div className="flex w-full items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <h1 className="text-base font-semibold">Feedback SaaS</h1>
+            <h1 className="text-base font-semibold">Echo</h1>
 
             <div className="ml-auto flex items-center gap-2">
               <HeaderNotifications />
@@ -74,6 +75,7 @@ export default async function BackofficeLayout({
           {children}
         </div>
       </SidebarInset>
+      <Toaster position="top-center" />
     </SidebarProvider>
   )
 }

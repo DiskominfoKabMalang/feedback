@@ -83,7 +83,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
           <span className="text-3xl font-bold tracking-tight tabular-nums">
             {totalFeedback.toLocaleString()}
           </span>
-          <span className="text-muted-foreground text-xs">feedbacks</span>
+          <span className="text-muted-foreground text-xs">feedback</span>
         </div>
         <div className="mt-3 flex items-center gap-1.5">
           <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
@@ -92,7 +92,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
               style={{ width: `${Math.min(totalFeedback / 10, 100)}%` }}
             />
           </div>
-          <span className="text-muted-foreground text-xs">last 30 days</span>
+          <span className="text-muted-foreground text-xs">30 hari terakhir</span>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
       <div className="bg-card rounded-xl border p-6 group hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
           <span className="text-muted-foreground text-sm font-medium">
-            Avg Rating
+            Rating Rata-rata
           </span>
           <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-900 transition-colors">
             <Star className="h-5 w-5 text-amber-600 dark:text-amber-500 fill-amber-600 dark:fill-amber-500" />
@@ -110,7 +110,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
           <span className="text-3xl font-bold tracking-tight tabular-nums">
             {avgRating > 0 ? avgRating.toFixed(1) : '-'}
           </span>
-          <span className="text-muted-foreground text-xs">out of 5.0</span>
+          <span className="text-muted-foreground text-xs">dari 5.0</span>
         </div>
         <div className="mt-3 flex gap-0.5">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -141,7 +141,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
       >
         <div className="flex items-center justify-between mb-4">
           <span className="text-muted-foreground text-sm font-medium">
-            NPS Score
+            Skor NPS
           </span>
           <div
             className={cn(
@@ -210,7 +210,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
       <div className="bg-card rounded-xl border p-6 group hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
           <span className="text-muted-foreground text-sm font-medium">
-            Response Rate
+            Tingkat Respon
           </span>
           <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
             <Users className="h-5 w-5 text-secondary" />
@@ -228,7 +228,7 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
         </div>
         <div className="mt-3 flex items-center gap-2">
           <span className="text-muted-foreground text-xs">
-            Target: 100 responses
+            Target: 100 respon
           </span>
         </div>
         <div className="mt-2">
@@ -245,9 +245,9 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
 }
 
 function getNpsCategory(score: number): string {
-  if (score >= 70) return 'Excellent'
-  if (score >= 50) return 'Good'
-  if (score >= 20) return 'Fair'
-  if (score >= 0) return 'Poor'
-  return 'Very Poor'
+  if (score >= 70) return 'Sangat Baik'
+  if (score >= 50) return 'Baik'
+  if (score >= 20) return 'Cukup'
+  if (score >= 0) return 'Kurang'
+  return 'Sangat Kurang'
 }

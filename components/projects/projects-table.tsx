@@ -52,11 +52,11 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Project Name</TableHead>
+            <TableHead>Nama Project</TableHead>
             <TableHead className="hidden md:table-cell">Slug</TableHead>
-            <TableHead className="hidden sm:table-cell">Feedbacks</TableHead>
-            <TableHead className="hidden sm:table-cell">Avg Rating</TableHead>
-            <TableHead className="hidden lg:table-cell">Created</TableHead>
+            <TableHead className="hidden sm:table-cell">Feedback</TableHead>
+            <TableHead className="hidden sm:table-cell">Rating Rata-rata</TableHead>
+            <TableHead className="hidden lg:table-cell">Dibuat</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>

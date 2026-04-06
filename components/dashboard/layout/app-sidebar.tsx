@@ -34,52 +34,52 @@ const navMainItems = [
     requiredPermission: 'dashboard.view',
   },
   {
-    title: 'Projects',
+    title: 'Proyek',
     url: '/projects',
     icon: Briefcase,
     requiredPermission: 'projects.read',
   },
   {
-    title: 'User Management',
+    title: 'Manajemen Pengguna',
     url: '#',
     icon: Users,
     requiredPermission: 'users.read',
     items: [
       {
-        title: 'Users',
+        title: 'Pengguna',
         url: '/users',
         requiredPermission: 'users.read',
       },
       {
-        title: 'Roles',
+        title: 'Peran',
         url: '/roles',
         requiredPermission: 'roles.read',
       },
       {
-        title: 'Permissions',
+        title: 'Izin',
         url: '/permissions',
         requiredPermission: 'permissions.read',
       },
       {
-        title: 'Resources',
+        title: 'Sumber Daya',
         url: '/resources',
         requiredPermission: 'resources.read',
       },
     ],
   },
   {
-    title: 'Settings',
+    title: 'Pengaturan',
     url: '#',
     icon: Settings2,
     requiredPermission: 'settings.manage',
     items: [
       {
-        title: 'General',
+        title: 'Umum',
         url: '/settings',
         requiredPermission: 'settings.manage',
       },
       {
-        title: 'Security',
+        title: 'Keamanan',
         url: '/settings/security',
         requiredPermission: 'settings.security',
       },
@@ -89,7 +89,7 @@ const navMainItems = [
 
 const navSecondaryItems = [
   {
-    title: 'Support',
+    title: 'Bantuan',
     url: 'https://github.com/anthropics/claude-code/issues',
     icon: LifeBuoy,
   },
@@ -123,17 +123,17 @@ export function AppSidebar({
               className="h-14 data-[active=true]:bg-primary/5 rounded-xl"
             >
               <a href="/dashboard" className="gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-                  <Layers className="h-5 w-5" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                  <span className="text-lg font-bold">E</span>
                 </div>
                 <div className="grid flex-1 text-left leading-tight">
                   <span className="truncate text-base font-bold tracking-tight">
-                    Feedback SaaS
+                    Echo
                   </span>
                   <span className="truncate text-xs font-medium opacity-60">
                     {projects.length > 0
-                      ? `${projects.length} project${projects.length > 1 ? 's' : ''}`
-                      : 'No projects'}
+                      ? `${projects.length} proyek`
+                      : 'Belum ada proyek'}
                   </span>
                 </div>
               </a>

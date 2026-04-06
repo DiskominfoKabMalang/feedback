@@ -22,14 +22,14 @@ const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
+      .min(8, 'Password minimal 8 karakter')
+      .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf kapital')
+      .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
+      .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: 'Password tidak cocok',
     path: ['confirmPassword'],
   })
 
@@ -62,7 +62,7 @@ function ResetPasswordForm() {
 
   const onSubmit = async (values: ResetPasswordFormValues) => {
     if (!token) {
-      setError('Invalid reset link')
+      setError('Link reset tidak valid')
       return
     }
 
@@ -82,7 +82,7 @@ function ResetPasswordForm() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to reset password')
+        setError(data.error || 'Gagal reset password')
         return
       }
 
@@ -91,7 +91,7 @@ function ResetPasswordForm() {
         router.push('/login')
       }, 3000)
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('Terjadi kesalahan. Silakan coba lagi.')
     } finally {
       setIsLoading(false)
     }
@@ -101,18 +101,18 @@ function ResetPasswordForm() {
     return (
       <div className="text-center">
         <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <CheckCircle2 className="h-8 w-8 text-primary" />
+          <div className="bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full">
+            <CheckCircle2 className="text-primary h-8 w-8" />
           </div>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
-          Password Berhasil Direset
+        <h2 className="text-foreground mb-2 text-2xl font-bold sm:text-3xl">
+          Password berhasil direset
         </h2>
-        <p className="mb-8 text-sm text-muted-foreground sm:text-base">
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">
           Password Anda telah diperbarui. Mengalihkan ke halaman login...
         </p>
         <div className="flex justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <Loader2 className="text-primary h-6 w-6 animate-spin" />
         </div>
       </div>
     )
@@ -120,11 +120,11 @@ function ResetPasswordForm() {
 
   return (
     <>
-      <div className="mb-6">
-        <h2 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
+      <div className="mb-8">
+        <h1 className="text-foreground mb-2 text-2xl font-bold sm:text-3xl">
           Reset Password
-        </h2>
-        <p className="text-sm text-muted-foreground sm:text-base">
+        </h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Masukkan password baru Anda
         </p>
       </div>
@@ -144,32 +144,32 @@ function ResetPasswordForm() {
         <div>
           <label
             htmlFor="password"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Password Baru
           </label>
           <div className="relative">
             <Lock
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type={showPassword ? 'text' : 'password'}
               id="password"
               placeholder="Masukkan password baru"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('password')}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 right-3.5 -translate-y-1/2 transition-colors hover:text-foreground"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {form.formState.errors.password && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.password.message}
             </p>
           )}
@@ -179,32 +179,32 @@ function ResetPasswordForm() {
         <div>
           <label
             htmlFor="confirmPassword"
-            className="mb-2 block text-sm font-medium text-foreground"
+            className="text-foreground mb-2 block text-sm font-medium"
           >
             Konfirmasi Password Baru
           </label>
           <div className="relative">
             <Lock
               size={18}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2"
             />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
               placeholder="Konfirmasi password baru"
-              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-card py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
+              className="focus:border-primary focus:ring-primary/20 w-full rounded-lg border border-input bg-background py-3 pr-12 pl-11 text-sm transition-all placeholder:text-muted-foreground focus:ring-2 focus:outline-none"
               {...form.register('confirmPassword')}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute top-1/2 right-3.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-muted-foreground"
+              className="text-muted-foreground absolute top-1/2 right-3.5 -translate-y-1/2 transition-colors hover:text-foreground"
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {form.formState.errors.confirmPassword && (
-            <p className="mt-1 text-sm text-destructive">
+            <p className="text-destructive mt-1 text-sm">
               {form.formState.errors.confirmPassword.message}
             </p>
           )}
@@ -214,7 +214,7 @@ function ResetPasswordForm() {
         <Button
           type="submit"
           disabled={isLoading || !token}
-          className="bg-primary hover:bg-primary/90 shadow-primary/25 hover:shadow-primary/40 h-12 w-full rounded-lg text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-300 disabled:opacity-50"
+          className="h-12 w-full rounded-lg text-sm font-semibold shadow-lg transition-all duration-300 disabled:opacity-50"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? 'Memproses...' : 'Reset Password'}
@@ -222,16 +222,16 @@ function ResetPasswordForm() {
       </form>
 
       {/* Back to Login Link */}
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-8 text-center text-sm">
         <Link
           href="/login"
-          className="group text-primary hover:text-primary/80 inline-flex items-center gap-1 font-semibold transition-colors"
+          className="text-primary hover:text-primary/80 inline-flex items-center gap-1 font-semibold transition-colors"
         >
           <ArrowLeft
             size={14}
             className="transition-transform group-hover:-translate-x-1"
           />
-          Kembali ke Login
+          Kembali ke halaman login
         </Link>
       </p>
     </>
@@ -243,7 +243,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="text-primary h-8 w-8 animate-spin" />
         </div>
       }
     >
