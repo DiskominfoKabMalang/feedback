@@ -87,7 +87,7 @@ COPY --from=builder /app/.next/static ./.next/static
 
 # Copy widget files
 COPY --from=builder /app/packages/widget/dist/widget.js ./public/widget.js
-COPY --from=builder /app/packages/widget/dist/widget.css ./public/widget.css
+COPY --from=builder /app/packages/widget/dist/style.css ./public/widget.css
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
