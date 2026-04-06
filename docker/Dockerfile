@@ -31,6 +31,9 @@ COPY . .
 # Build application
 RUN pnpm build
 
+# Build widget
+RUN cd packages/widget && pnpm build
+
 # -----------------------------------------------------------------------------
 # Stage 2: Migration Tools (extract for production)
 # -----------------------------------------------------------------------------
