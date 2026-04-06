@@ -44,6 +44,67 @@ docker compose ps
 curl http://localhost:3000/api/health
 ```
 
+## Widget Deployment
+
+The feedback widget must be built locally before deploying. The widget files are then included in the Docker image during CI/CD build.
+
+### Build Widget Locally
+
+```bash
+# Navigate to widget package
+cd packages/widget
+
+# Install dependencies (if not already installed)
+pnpm install
+
+# Build widget (generates UMD and ES formats)
+pnpm build
+
+# Copy built files to public directory
+cp dist/widget.umd.cjs ../public/widget.js
+cp dist/style.css ../public/widget.css
+
+# Return to project root
+cd ../..
+```
+
+### Verify Widget Files
+
+```bash
+# Check that files exist in public/widget/
+ls -la public/widget/
+
+# Should show:
+# - widget.js (UMD format for <script> tags)
+# - widget.umd.cjs (UMD format source)
+# - style.css (Widget styles)
+```
+
+### Access Widget in Production
+
+After deployment, the widget is accessible at:
+
+```bash
+https://your-domain.com/widget/widget.js
+https://your-domain.com/widget/widget.css
+```
+
+### Embed Widget in Your Website
+
+```html
+<!-- Add to your site's <head> or before </body> -->
+<link rel="stylesheet" href="https://your-domain.com/widget/widget.css" />
+<script src="https://your-domain.com/widget/widget.js"></script>
+
+<!-- Initialize widget -->
+<script>
+  window.PiskyWidget.init({
+    projectId: 'your-project-id',
+    position: 'bottom-right',
+  })
+</script>
+```
+
 ## Database Setup
 
 ### Option 1: Generate SQL Schema (Manual Import)
@@ -148,6 +209,8 @@ docker compose restart dashboard
 
 # Update application
 git pull
+# Rebuild widget if needed (see Widget Deployment section)
+cd packages/widget && pnpm build && cp dist/widget.umd.cjs ../public/widget.js && cp dist/style.css ../public/widget.css && cd ../..
 docker compose up -d --build
 
 # Check database tables
