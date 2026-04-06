@@ -1,7 +1,7 @@
 # =============================================================================
 # Pisky Design System - Dockerfile for Feedback SaaS
 # =============================================================================
-# Multi-stage build for optimized image size
+# Multi-stage build for optimized image size with migration support
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -32,7 +32,26 @@ COPY . .
 RUN pnpm build
 
 # -----------------------------------------------------------------------------
-# Stage 2: Production Runner
+# Stage 2: Migration Tools (extract for production)
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS migration
+
+WORKDIR /app
+
+# Copy package files and install drizzle-kit only
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+RUN npm install -g pnpm@9.15.0
+RUN pnpm install --frozen-lockfile
+RUN pnpm add -D drizzle-kit
+
+# Copy migration files
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
+COPY db ./db
+
+# -----------------------------------------------------------------------------
+# Stage 3: Production Runner
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS runner
 
@@ -46,6 +65,14 @@ ENV NODE_ENV=production \
 
 # Install dependencies for node-gyp if needed
 RUN apk add --no-cache libc6-compat
+
+# Copy drizzle-kit from migration stage
+COPY --from=migration /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
+COPY --from=migration /app/node_modules/.bin/drizzle-kit ./node_modules/.bin/drizzle-kit
+COPY --from=migration /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=migration /app/drizzle ./drizzle
+COPY --from=migration /app/db ./db
+COPY --from=migration /app/package.json ./package.json
 
 # Copy application files from builder
 COPY --from=builder /app/public ./public
@@ -66,5 +93,3 @@ EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-CMD ["node", "server.js"]
