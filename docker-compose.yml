@@ -36,7 +36,7 @@ services:
 
   # Database Migration Service (run once for migrations)
   migrate:
-    image: node:20-alpine
+    image: ${MIGRATE_IMAGE:-node:20-alpine}
     container_name: feedbackapp-migrate
     profiles:
       - migrate
@@ -55,21 +55,14 @@ services:
         condition: service_healthy
     command: |
       sh -c "
-        apk add --no-cache python3 make g++ netcat-openbsd &&
+        apk add --no-cache python3 make g++ &&
         npm install -g pnpm@9.15.0 &&
         cp /tmp/pnpm-lock.yaml /app/pnpm-lock.yaml &&
         cd /app &&
         pnpm install --frozen-lockfile &&
         pnpm add -D drizzle-kit &&
-        echo 'Waiting for database to be ready...' &&
-        for i in $$(seq 1 10); do
-          if nc -zv postgres 5432 2>&1 | grep -q succeeded; then
-            echo 'Database is ready!' &&
-            break
-          fi
-          echo 'Waiting for postgres... ($$i/10)' &&
-          sleep 2
-        done &&
+        echo 'Waiting for postgres...' &&
+        sleep 5 &&
         echo 'Running database migrations...' &&
         pnpm db:push &&
         echo '✅ Migrations completed successfully!'
