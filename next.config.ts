@@ -62,6 +62,20 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // CORS headers for widget static files
+        source: '/widget/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, OPTIONS',
+          },
+        ],
+      },
     ]
   },
 }
