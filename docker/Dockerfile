@@ -17,6 +17,23 @@ COPY . .
 # Build application
 RUN pnpm build
 
+# Migration stage - extract drizzle-kit
+FROM node:20-alpine AS migration
+
+WORKDIR /app
+
+# Copy package files and install drizzle-kit only
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+RUN npm install -g pnpm@latest
+RUN pnpm install --frozen-lockfile
+RUN pnpm add -D drizzle-kit
+
+# Copy migration files
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
+COPY db ./db
+
 # Production stage
 FROM node:20-alpine AS runner
 
@@ -26,20 +43,18 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Install pnpm
-RUN npm install -g pnpm@latest
+# Copy migration files from migration stage
+COPY --from=migration /app/node_modules/.bin/drizzle-kit /usr/local/bin/drizzle-kit
+COPY --from=migration /app/node_modules/drizzle-kit /node_modules/drizzle-kit
+COPY --from=migration /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=migration /app/drizzle ./drizzle
+COPY --from=migration /app/db ./db
+COPY --from=migration /app/package.json ./package.json
 
-# Copy necessary files from builder
+# Copy application files from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/db ./db
-
-# Install production dependencies with drizzle-kit for migrations
-RUN pnpm install --prod --no-optional --ignore-scripts && pnpm add -D drizzle-kit
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
