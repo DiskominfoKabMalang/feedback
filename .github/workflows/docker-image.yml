@@ -28,8 +28,6 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       labels: ${{ steps.meta.outputs.labels }}
-      image-name: ${{ steps.image.outputs.name }}
-      should-push: ${{ steps.check.outputs.should_push }}
 
     steps:
       - name: Checkout code
@@ -44,26 +42,15 @@ jobs:
           fi
           echo "✅ Dockerfile found"
 
-      - name: Set image name
-        id: image
-        run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          echo "name=$IMAGE" >> $GITHUB_OUTPUT
-          echo "📷 Image name: $IMAGE"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Check branch configuration
-        id: check
-        run: |
-          BRANCH="${{ github.ref_name }}"
-          echo "🌿 Current branch: $BRANCH"
-
-          if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "feat/pisky-design-kit" ]; then
-            echo "should_push=true" >> $GITHUB_OUTPUT
-            echo "✅ Branch is configured for image build"
-          else
-            echo "should_push=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Branch not configured, skipping"
-          fi
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
@@ -83,55 +70,12 @@ jobs:
           echo "${{ steps.meta.outputs.labels }}"
 
   # ===========================================================================
-  # PHASE 2: Build Docker Image
+  # PHASE 2: Build & Push
   # ===========================================================================
-  build:
-    name: 🔨 Build Image
+  build-and-push:
+    name: 🔨 Build & Push
     runs-on: ubuntu-latest
     needs: prepare
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build image (no push)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          tags: ${{ needs.prepare.outputs.tags }}
-          labels: ${{ needs.prepare.outputs.labels }}
-          load: true  # Load to local Docker for size check
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Show image size
-        run: |
-          echo "📊 Image sizes:"
-          docker images ${{ needs.prepare.outputs.image-name }} --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}"
-
-      - name: Export image to tar
-        run: |
-          IMAGE_TAG=$(echo "${{ needs.prepare.outputs.tags }}" | head -n1)
-          docker save $IMAGE_TAG > /tmp/image.tar
-
-      - name: Upload image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp/image.tar
-          retention-days: 1
-
-  # ===========================================================================
-  # PHASE 3: Push to Registry
-  # ===========================================================================
-  push:
-    name: 🚀 Push to Registry
-    runs-on: ubuntu-latest
-    needs: [prepare, build]
 
     steps:
       - name: Checkout code
@@ -147,39 +91,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
-          name: docker-image
-          path: /tmp
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ${{ needs.prepare.outputs.tags }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
 
-      - name: Load image from tar
+      - name: Show pushed tags
         run: |
-          docker load < /tmp/image.tar
-
-      - name: Push image to registry
-        run: |
-          echo "📤 Pushing image to ${{ env.REGISTRY }}..."
-          for tag in ${{ needs.prepare.outputs.tags }}; do
-            echo "  → Pushing $tag"
-            docker push $tag
+          echo "✅ Pushed tags:"
+          echo "${{ needs.prepare.outputs.tags }}" | while read tag; do
+            echo "  → $tag"
           done
-          echo "✅ Push complete!"
-
-      - name: Image digest
-        run: |
-          IMAGE_TAG=$(echo "${{ needs.prepare.outputs.tags }}" | head -n1)
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_TAG)
-          echo "🔐 Image digest: $DIGEST"
-          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
   # ===========================================================================
-  # PHASE 4: Summary
+  # PHASE 3: Summary
   # ===========================================================================
   summary:
     name: 📊 Build Summary
     runs-on: ubuntu-latest
-    needs: [prepare, build, push]
+    needs: [prepare, build-and-push]
     if: always()
 
     steps:
@@ -190,8 +127,7 @@ jobs:
           echo "| Phase | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 📦 Prepare | ${{ needs.prepare.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Build | ${{ needs.build.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Push | ${{ needs.push.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build & Push | ${{ needs.build-and-push.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🏷️ Tags" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
