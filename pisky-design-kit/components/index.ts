@@ -29,7 +29,6 @@ export { Input } from './input'
 
 // Badge
 export { Badge, badgeVariants } from './badge'
-export type { VariantProps as BadgeVariantProps } from './badge'
 
 // Table
 export {
@@ -59,7 +58,6 @@ export {
 
 // Alert
 export { Alert, AlertTitle, AlertDescription } from './alert'
-export type { VariantProps as AlertVariantProps } from './alert'
 
 // Tabs
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs'
