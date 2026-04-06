@@ -34,28 +34,6 @@ services:
       timeout: 3s
       retries: 3
 
-  # Database Migration Service (run once for migrations)
-  migrate:
-    image: ${MIGRATE_IMAGE:-ghcr.io/diskominfokabmalang/feedback:latest}
-    container_name: feedbackapp-migrate
-    profiles:
-      - migrate
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-feedbackapp}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-feedbackapp}
-    networks:
-      - feedbackapp-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: |
-      sh -c "
-        echo 'Waiting for postgres...' &&
-        sleep 5 &&
-        echo 'Running database migrations...' &&
-        npx drizzle-kit push &&
-        echo '✅ Migrations completed successfully!'
-      "
-
   # Dashboard App (Next.js)
   dashboard:
     build:
