@@ -46,7 +46,7 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm add -D drizzle-kit
 
 # Copy migration files
-COPY drizzle.config.ts ./
+COPY drizzle.config.json ./
 COPY drizzle ./drizzle
 COPY db ./db
 
@@ -69,7 +69,7 @@ RUN apk add --no-cache libc6-compat
 # Copy drizzle-kit from migration stage
 COPY --from=migration /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
 COPY --from=migration /app/node_modules/.bin/drizzle-kit ./node_modules/.bin/drizzle-kit
-COPY --from=migration /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=migration /app/drizzle.config.json ./drizzle.config.json
 COPY --from=migration /app/drizzle ./drizzle
 COPY --from=migration /app/db ./db
 COPY --from=migration /app/package.json ./package.json
