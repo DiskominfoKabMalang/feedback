@@ -31,8 +31,11 @@ COPY . .
 # Build application
 RUN pnpm build
 
-# Build widget
-RUN cd packages/widget && pnpm build
+# Build widget (install deps first)
+WORKDIR /app/packages/widget
+RUN pnpm install
+RUN pnpm build
+WORKDIR /app
 
 # -----------------------------------------------------------------------------
 # Stage 2: Migration Tools (extract for production)
