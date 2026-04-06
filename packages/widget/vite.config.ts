@@ -21,7 +21,12 @@ export default defineConfig({
     lib: {
       entry: './src/widget.tsx',
       name: 'FeedbackWidget',
-      fileName: 'widget',
+      fileName: (format) => {
+        if (format === 'umd') {
+          return 'widget.umd.js' // ← .js bukan .cjs
+        }
+        return `widget.${format}.js`
+      },
       formats: ['umd', 'es'],
     },
     rollupOptions: {

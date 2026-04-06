@@ -61,7 +61,7 @@ pnpm install
 pnpm build
 
 # Copy built files to public directory
-cp dist/widget.umd.cjs ../public/widget.js
+cp dist/widget.umd.js ../public/widget.js
 cp dist/style.css ../public/widget.css
 
 # Return to project root
@@ -210,7 +210,7 @@ docker compose restart dashboard
 # Update application
 git pull
 # Rebuild widget if needed (see Widget Deployment section)
-cd packages/widget && pnpm build && cp dist/widget.umd.cjs ../public/widget.js && cp dist/style.css ../public/widget.css && cd ../..
+cd packages/widget && pnpm build && cp dist/widget.umd.js ../public/widget.js && cp dist/style.css ../public/widget.css && cd ../..
 docker compose up -d --build
 
 # Check database tables
