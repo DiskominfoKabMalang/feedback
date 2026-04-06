@@ -79,9 +79,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy widget files (use UMD for browser compatibility)
-COPY --from=builder /app/packages/widget/dist/widget.umd.cjs ./public/widget.js
-COPY --from=builder /app/packages/widget/dist/style.css ./public/widget.css
+# Note: Widget files are now built locally and copied to public/widget/ before Docker build
+# See docs/DEPLOYMENT.md for widget build instructions
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
