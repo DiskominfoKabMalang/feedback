@@ -12,6 +12,10 @@ import {
   Globe,
   Clock,
   Star,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,11 +26,13 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
-import { DataTable } from '@/components/data-table'
 import {
-  getFeedbacksColumns,
-  type Feedback,
-} from '@/components/data-table/columns/feedbacks'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   ActionBar,
   ActionBarSelection,
@@ -37,15 +43,42 @@ import {
 } from '@/components/ui/action-bar'
 import { toast } from 'sonner'
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { id } from 'date-fns/locale'
+import { useSearchParams, useRouter } from 'next/navigation'
+
+interface Feedback {
+  id: string
+  rating: number
+  status: string
+  answers: {
+    tags?: string[]
+    comment?: string
+    email?: string
+  }
+  meta?: {
+    url?: string
+    browser?: string
+    os?: string
+  }
+  createdAt: string
+}
+
+interface PaginationData {
+  current_page: number
+  total_pages: number
+  total_items: number
+  items_per_page: number
+  has_next: boolean
+  has_prev: boolean
+}
 
 interface FeedbackInboxClientProps {
   projectId: string
@@ -56,80 +89,148 @@ interface FeedbackInboxClientProps {
   }
 }
 
+const statusLabels: Record<string, string> = {
+  new: 'Baru',
+  read: 'Dibaca',
+  archived: 'Diarsipkan',
+}
+
 export function FeedbackInboxClient({
   projectId,
   initialFilters,
 }: FeedbackInboxClientProps) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // State
   const [data, setData] = useState<Feedback[]>([])
+  const [pagination, setPagination] = useState<PaginationData>({
+    current_page: 1,
+    total_pages: 1,
+    total_items: 0,
+    items_per_page: 10,
+    has_next: false,
+    has_prev: false,
+  })
+  const [stats, setStats] = useState({
+    total: 0,
+    new: 0,
+    positive: 0,
+    negative: 0,
+  })
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
-    null
-  )
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const mountedRef = useRef(true)
 
-  // Fetch feedbacks
-  const fetchFeedbacks = useCallback(
-    async (filters?: { rating?: string; status?: string; tag?: string }) => {
-      setIsLoading(true)
-      try {
-        const params = new URLSearchParams()
-        if (filters?.rating) params.set('min_rating', filters.rating)
-        if (filters?.status) params.set('status', filters.status)
-        if (filters?.tag) params.set('tag', filters.tag)
+  // Get current filters from URL
+  const getCurrentFilters = useCallback(() => {
+    return {
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || '10',
+      min_rating: searchParams.get('rating') || '',
+      status: searchParams.get('status') || '',
+      tag: searchParams.get('tag') || '',
+      search: searchParams.get('search') || '',
+    }
+  }, [searchParams])
 
-        const response = await fetch(
-          `/api/dashboard/projects/${projectId}/feedbacks?${params}`
-        )
-        if (!response.ok) throw new Error('Failed to fetch feedbacks')
-        const result = await response.json()
+  // Update URL with filters
+  const updateFilters = useCallback(
+    (updates: Record<string, string | number | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
 
-        if (mountedRef.current) {
-          setData(result.data || [])
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === '') {
+          params.delete(key)
+        } else {
+          params.set(key, String(value))
         }
-      } catch (error) {
-        console.error('Error fetching feedbacks:', error)
-        toast.error('Gagal memuat feedback')
-      } finally {
-        if (mountedRef.current) {
-          setIsLoading(false)
-        }
+      })
+
+      // Reset to page 1 when filters change (except page itself)
+      if (!updates.page) {
+        params.set('page', '1')
       }
+
+      router.push(`?${params.toString()}`, { scroll: false })
     },
-    [projectId]
+    [searchParams, router]
   )
 
-  // Initial fetch
+  // Fetch feedbacks with pagination
+  const fetchFeedbacks = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const filters = getCurrentFilters()
+      const params = new URLSearchParams()
+
+      if (filters.page) params.set('page', filters.page)
+      if (filters.limit) params.set('limit', filters.limit)
+      if (filters.min_rating) params.set('min_rating', filters.min_rating)
+      if (filters.status) params.set('status', filters.status)
+      if (filters.tag) params.set('tag', filters.tag)
+      if (filters.search) params.set('search', filters.search)
+
+      const response = await fetch(
+        `/api/dashboard/projects/${projectId}/feedbacks?${params}`
+      )
+
+      if (!response.ok) throw new Error('Failed to fetch feedbacks')
+
+      const result = await response.json()
+
+      if (mountedRef.current) {
+        setData(result.data || [])
+        setPagination(result.pagination || pagination)
+
+        // Calculate stats from current data (for better UX, show stats for filtered results)
+        setStats({
+          total: result.pagination?.total_items || 0,
+          new: result.data?.filter((f: Feedback) => f.status === 'new').length || 0,
+          positive: result.data?.filter((f: Feedback) => f.rating >= 4).length || 0,
+          negative: result.data?.filter((f: Feedback) => f.rating <= 2).length || 0,
+        })
+        setSelectedIds(new Set())
+      }
+    } catch (error) {
+      console.error('Error fetching feedbacks:', error)
+      toast.error('Gagal memuat feedback')
+    } finally {
+      if (mountedRef.current) {
+        setIsLoading(false)
+      }
+    }
+  }, [projectId, getCurrentFilters, pagination])
+
+  // Initial fetch and refetch on URL change
   useEffect(() => {
     mountedRef.current = true
-    fetchFeedbacks(initialFilters)
+    fetchFeedbacks()
 
     return () => {
       mountedRef.current = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId])
+  }, [fetchFeedbacks])
 
   // Handle status change
   const handleStatusChange = useCallback(
     async (feedback: Feedback, newStatus: string) => {
       try {
-        const response = await fetch(
-          `/api/dashboard/feedbacks/${feedback.id}`,
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus }),
-          }
-        )
+        const response = await fetch(`/api/dashboard/feedbacks/${feedback.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        })
 
         if (!response.ok) {
           const error = await response.json()
           throw new Error(error.error || 'Gagal mengubah status')
         }
 
-        toast.success(`Ditandai sebagai ${newStatus}`)
-        fetchFeedbacks(initialFilters)
+        toast.success(`Ditandai sebagai ${statusLabels[newStatus] || newStatus}`)
+        fetchFeedbacks()
       } catch (error) {
         console.error('Error updating status:', error)
         toast.error(
@@ -137,7 +238,7 @@ export function FeedbackInboxClient({
         )
       }
     },
-    [initialFilters, fetchFeedbacks]
+    [fetchFeedbacks]
   )
 
   // Handle delete
@@ -149,12 +250,9 @@ export function FeedbackInboxClient({
       if (!confirmed) return
 
       try {
-        const response = await fetch(
-          `/api/dashboard/feedbacks/${feedback.id}`,
-          {
-            method: 'DELETE',
-          }
-        )
+        const response = await fetch(`/api/dashboard/feedbacks/${feedback.id}`, {
+          method: 'DELETE',
+        })
 
         if (!response.ok) {
           const error = await response.json()
@@ -162,7 +260,7 @@ export function FeedbackInboxClient({
         }
 
         toast.success('Feedback dihapus')
-        fetchFeedbacks(initialFilters)
+        fetchFeedbacks()
       } catch (error) {
         console.error('Error deleting feedback:', error)
         toast.error(
@@ -170,105 +268,88 @@ export function FeedbackInboxClient({
         )
       }
     },
-    [initialFilters, fetchFeedbacks]
+    [fetchFeedbacks]
   )
 
   // Handle view details
   const handleView = useCallback((feedback: Feedback) => {
     setSelectedFeedback(feedback)
-    setIsDrawerOpen(true)
+    setIsDialogOpen(true)
   }, [])
 
-  // Handle bulk archive
-  const handleBulkArchive = useCallback(
-    async (selectedFeedbacks: Feedback[]) => {
-      if (selectedFeedbacks.length === 0) return
+  // Handle bulk actions
+  const handleBulkAction = useCallback(
+    async (action: 'read' | 'archived' | 'delete') => {
+      if (selectedIds.size === 0) return
 
-      try {
-        await Promise.all(
-          selectedFeedbacks.map((feedback) =>
-            fetch(`/api/dashboard/feedbacks/${feedback.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'archived' }),
-            })
-          )
-        )
+      const isDelete = action === 'delete'
+      const confirmed = isDelete
+        ? window.confirm(`Hapus ${selectedIds.size} feedback?`)
+        : true
 
-        toast.success(`${selectedFeedbacks.length} feedback diarsipkan`)
-        fetchFeedbacks(initialFilters)
-      } catch (error) {
-        console.error('Error archiving feedbacks:', error)
-        toast.error('Gagal mengarsipkan feedback')
-      }
-    },
-    [initialFilters, fetchFeedbacks]
-  )
-
-  // Handle bulk delete
-  const handleBulkDelete = useCallback(
-    async (selectedFeedbacks: Feedback[]) => {
-      if (selectedFeedbacks.length === 0) return
-
-      const confirmed = window.confirm(
-        `Hapus ${selectedFeedbacks.length} feedback?`
-      )
       if (!confirmed) return
 
       try {
-        await Promise.all(
-          selectedFeedbacks.map((feedback) =>
-            fetch(`/api/dashboard/feedbacks/${feedback.id}`, {
-              method: 'DELETE',
-            })
-          )
-        )
+        const endpoint = `/api/dashboard/projects/${projectId}/feedbacks`
 
-        toast.success(`${selectedFeedbacks.length} feedback dihapus`)
-        fetchFeedbacks(initialFilters)
+        if (isDelete) {
+          await Promise.all(
+            Array.from(selectedIds).map((id) =>
+              fetch(`/api/dashboard/feedbacks/${id}`, { method: 'DELETE' })
+            )
+          )
+          toast.success(`${selectedIds.size} feedback dihapus`)
+        } else {
+          await fetch(endpoint, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              feedback_ids: Array.from(selectedIds),
+              status: action,
+            }),
+          })
+          toast.success(
+            `${selectedIds.size} feedback ditandai sebagai ${statusLabels[action]}`
+          )
+        }
+
+        fetchFeedbacks()
       } catch (error) {
-        console.error('Error deleting feedbacks:', error)
-        toast.error('Gagal menghapus feedback')
+        console.error('Error performing bulk action:', error)
+        toast.error('Gagal melakukan aksi bulk')
       }
     },
-    [initialFilters, fetchFeedbacks]
+    [selectedIds, projectId, fetchFeedbacks]
   )
 
-  // Handle bulk mark as read
-  const handleBulkMarkRead = useCallback(
-    async (selectedFeedbacks: Feedback[]) => {
-      if (selectedFeedbacks.length === 0) return
-
-      try {
-        await Promise.all(
-          selectedFeedbacks.map((feedback) =>
-            fetch(`/api/dashboard/feedbacks/${feedback.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'read' }),
-            })
-          )
-        )
-
-        toast.success(`${selectedFeedbacks.length} feedback ditandai sebagai dibaca`)
-        fetchFeedbacks(initialFilters)
-      } catch (error) {
-        console.error('Error updating feedbacks:', error)
-        toast.error('Gagal mengubah feedback')
+  // Handle select all
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        setSelectedIds(new Set(data.map((f) => f.id)))
+      } else {
+        setSelectedIds(new Set())
       }
     },
-    [initialFilters, fetchFeedbacks]
+    [data]
   )
 
-  // Create columns
-  const columns = getFeedbacksColumns({
-    onView: handleView,
-    onStatusChange: handleStatusChange,
-    onDelete: handleDelete,
-  })
+  // Handle select one
+  const handleSelectOne = useCallback((id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
+  }, [])
 
-  // Build rating filter options (static 1-5 stars)
+  // Filter options
   const ratingOptions = [
+    { label: 'Semua Rating', value: 'all' },
     { label: '5 Bintang', value: '5' },
     { label: '4 Bintang', value: '4' },
     { label: '3 Bintang', value: '3' },
@@ -276,18 +357,19 @@ export function FeedbackInboxClient({
     { label: '1 Bintang', value: '1' },
   ]
 
-  // Build status filter options
   const statusOptions = [
+    { label: 'Semua Status', value: 'all' },
     { label: 'Baru', value: 'new' },
     { label: 'Dibaca', value: 'read' },
     { label: 'Diarsipkan', value: 'archived' },
   ]
 
-  const statusLabels: Record<string, string> = {
-    new: 'Baru',
-    read: 'Dibaca',
-    archived: 'Diarsipkan',
-  }
+  const pageSizeOptions = ['10', '20', '50', '100']
+
+  const currentRating = searchParams.get('rating') || 'all'
+  const currentStatus = searchParams.get('status') || 'all'
+  const currentLimit = searchParams.get('limit') || '10'
+  const searchQuery = searchParams.get('search') || ''
 
   return (
     <div className="space-y-6">
@@ -306,24 +388,105 @@ export function FeedbackInboxClient({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => fetchFeedbacks(initialFilters)}
+            onClick={() => {
+              router.push('?page=1&limit=10', { scroll: false })
+            }}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Segarkan
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Ekspor CSV
+          <Button variant="outline" size="sm" asChild>
+            <a
+              href={`/api/dashboard/projects/${projectId}/feedbacks/export`}
+              target="_blank"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Ekspor CSV
+            </a>
           </Button>
         </div>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            {/* Search */}
+            <div className="flex-1 min-w-[200px]">
+              <input
+                type="text"
+                placeholder="Cari komentar..."
+                value={searchQuery}
+                onChange={(e) => updateFilters({ search: e.target.value })}
+                className="w-full px-3 py-2 text-sm border rounded-md bg-background"
+              />
+            </div>
+
+            {/* Rating Filter */}
+            <Select
+              value={currentRating}
+              onValueChange={(value) =>
+                updateFilters({ rating: value === 'all' ? null : value })
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                {ratingOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Status Filter */}
+            <Select
+              value={currentStatus}
+              onValueChange={(value) =>
+                updateFilters({ status: value === 'all' ? null : value })
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Clear Filters */}
+            {(currentRating !== 'all' || currentStatus !== 'all' || searchQuery) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  updateFilters({
+                    rating: null,
+                    status: null,
+                    search: null,
+                  })
+                }
+              >
+                <X className="mr-2 h-4 w-4" />
+                Reset Filter
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-2xl font-semibold tabular-nums">
-              {data.length}
+              {isLoading ? '...' : stats.total}
             </CardTitle>
             <CardDescription>Total Feedback</CardDescription>
           </CardHeader>
@@ -331,8 +494,8 @@ export function FeedbackInboxClient({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-2xl font-semibold tabular-nums">
-              {data.filter((f) => f.status === 'new').length}
+            <CardTitle className="text-2xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+              {isLoading ? '...' : stats.new}
             </CardTitle>
             <CardDescription>Baru</CardDescription>
           </CardHeader>
@@ -340,8 +503,8 @@ export function FeedbackInboxClient({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-2xl font-semibold tabular-nums">
-              {data.filter((f) => f.rating >= 4).length}
+            <CardTitle className="text-2xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+              {isLoading ? '...' : stats.positive}
             </CardTitle>
             <CardDescription>Positif (4-5)</CardDescription>
           </CardHeader>
@@ -349,8 +512,8 @@ export function FeedbackInboxClient({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-2xl font-semibold tabular-nums">
-              {data.filter((f) => f.rating <= 2).length}
+            <CardTitle className="text-2xl font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+              {isLoading ? '...' : stats.negative}
             </CardTitle>
             <CardDescription>Negatif (1-2)</CardDescription>
           </CardHeader>
@@ -360,85 +523,283 @@ export function FeedbackInboxClient({
       {/* Data Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Semua Feedback</CardTitle>
-          <CardDescription>Kelola dan tanggapi feedback pengguna</CardDescription>
+          <CardTitle>
+            Semua Feedback{' '}
+            {!isLoading && `(${pagination.total_items} total)`}
+          </CardTitle>
+          <CardDescription>
+            Kelola dan tanggapi feedback pengguna
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable
-            columns={columns}
-            data={data}
-            filterKey="comment"
-            toolbarPlaceholder="Cari feedback..."
-            isLoading={isLoading}
-            facetedFilters={[
-              {
-                columnId: 'rating',
-                title: 'Rating',
-                options: ratingOptions,
-              },
-              {
-                columnId: 'status',
-                title: 'Status',
-                options: statusOptions,
-              },
-            ]}
-            renderActionBar={(table) => {
-              const selectedRows = table.getFilteredSelectedRowModel().rows
-              const selectedFeedbacks = selectedRows.map((row) => row.original)
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-16 bg-muted/50 rounded-lg animate-pulse"
+                />
+              ))}
+            </div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-12">
+              <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Tidak ada feedback ditemukan</p>
+            </div>
+          ) : (
+            <>
+              <div className="border rounded-lg divide-y">
+                {/* Header */}
+                <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-muted/50 text-sm font-medium">
+                  <div className="col-span-1 flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedIds.size === data.length && data.length > 0
+                      }
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                  </div>
+                  <div className="col-span-1">Rating</div>
+                  <div className="col-span-5">Komentar</div>
+                  <div className="col-span-2">Status</div>
+                  <div className="col-span-2">Tanggal</div>
+                  <div className="col-span-1">Aksi</div>
+                </div>
 
-              return (
-                <ActionBar
-                  open={selectedRows.length > 0}
-                  onOpenChange={(open) => {
-                    if (!open) {
-                      table.toggleAllRowsSelected(false)
+                {/* Rows */}
+                {data.map((feedback) => {
+                  const isPositive = feedback.rating >= 4
+                  const isNegative = feedback.rating <= 2
+                  const isSelected = selectedIds.has(feedback.id)
+
+                  return (
+                    <div
+                      key={feedback.id}
+                      className={cn(
+                        'grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors',
+                        isSelected && 'bg-muted/50'
+                      )}
+                    >
+                      {/* Checkbox */}
+                      <div className="col-span-1">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) =>
+                            handleSelectOne(feedback.id, e.target.checked)
+                          }
+                          className="w-4 h-4"
+                        />
+                      </div>
+
+                      {/* Rating */}
+                      <div className="col-span-1">
+                        <div
+                          className={cn(
+                            'flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold',
+                            isPositive &&
+                              'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                            isNegative &&
+                              'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+                            !isPositive &&
+                              !isNegative &&
+                              'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                          )}
+                        >
+                          {feedback.rating}
+                        </div>
+                      </div>
+
+                      {/* Comment */}
+                      <div className="col-span-5">
+                        <p className="text-sm line-clamp-2">
+                          {feedback.answers?.comment || '-'}
+                        </p>
+                        {feedback.answers?.tags &&
+                          feedback.answers.tags.length > 0 && (
+                            <div className="flex gap-1 mt-1">
+                              {feedback.answers.tags.slice(0, 2).map((tag) => (
+                                <Badge
+                                  key={tag}
+                                  variant="secondary"
+                                  className="text-xs px-1.5 py-0"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {feedback.answers.tags.length > 2 && (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs px-1.5 py-0"
+                                >
+                                  +{feedback.answers.tags.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                      </div>
+
+                      {/* Status */}
+                      <div className="col-span-2">
+                        <Badge
+                          variant={
+                            feedback.status === 'new'
+                              ? 'default'
+                              : feedback.status === 'archived'
+                                ? 'outline'
+                                : 'secondary'
+                          }
+                          className="text-xs"
+                        >
+                          {statusLabels[feedback.status] || feedback.status}
+                        </Badge>
+                      </div>
+
+                      {/* Date */}
+                      <div className="col-span-2 text-sm text-muted-foreground">
+                        {formatDistanceToNow(
+                          new Date(feedback.createdAt),
+                          { addSuffix: true, locale: id }
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="col-span-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(feedback)}
+                        >
+                          Detail
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                )}
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4 px-2">
+                <div className="text-sm text-muted-foreground">
+                  Menampilkan {(pagination.current_page - 1) * pagination.items_per_page + 1} -{' '}
+                  {Math.min(
+                    pagination.current_page * pagination.items_per_page,
+                    pagination.total_items
+                  )}{' '}
+                  dari {pagination.total_items} feedback
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Page Size */}
+                  <Select
+                    value={currentLimit}
+                    onValueChange={(value) => updateFilters({ limit: value })}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                      {pageSizeOptions.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Page Navigation */}
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() => updateFilters({ page: 1 })}
+                    disabled={!pagination.has_prev}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() =>
+                      updateFilters({ page: pagination.current_page - 1 })
                     }
-                  }}
-                >
-                  <ActionBarSelection>
-                    {selectedRows.length} dipilih
-                  </ActionBarSelection>
-                  <ActionBarSeparator />
-                  <ActionBarGroup>
-                    <ActionBarItem
-                      onSelect={() => handleBulkMarkRead(selectedFeedbacks)}
-                    >
-                      <Check className="mr-2 h-4 w-4" />
-                      Tandai Dibaca
-                    </ActionBarItem>
-                    <ActionBarItem
-                      onSelect={() => handleBulkArchive(selectedFeedbacks)}
-                    >
-                      <Archive className="mr-2 h-4 w-4" />
-                      Arsipkan
-                    </ActionBarItem>
-                    <ActionBarItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => handleBulkDelete(selectedFeedbacks)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Hapus
-                    </ActionBarItem>
-                  </ActionBarGroup>
-                  <ActionBarClose>
-                    <X className="h-4 w-4" />
-                  </ActionBarClose>
-                </ActionBar>
-              )
-            }}
-          />
+                    disabled={!pagination.has_prev}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm w-12 text-center">
+                    {pagination.current_page} / {pagination.total_pages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() =>
+                      updateFilters({ page: pagination.current_page + 1 })
+                    }
+                    disabled={!pagination.has_next}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 p-0"
+                    onClick={() =>
+                      updateFilters({ page: pagination.total_pages })
+                    }
+                    disabled={!pagination.has_next}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      {/* Details Drawer */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="sm:max-w-lg">
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <ActionBar
+          open={selectedIds.size > 0}
+          onOpenChange={(open) => {
+            if (!open) setSelectedIds(new Set())
+          }}
+        >
+          <ActionBarSelection>{selectedIds.size} dipilih</ActionBarSelection>
+          <ActionBarSeparator />
+          <ActionBarGroup>
+            <ActionBarItem onSelect={() => handleBulkAction('read')}>
+              <Check className="mr-2 h-4 w-4" />
+              Tandai Dibaca
+            </ActionBarItem>
+            <ActionBarItem onSelect={() => handleBulkAction('archived')}>
+              <Archive className="mr-2 h-4 w-4" />
+              Arsipkan
+            </ActionBarItem>
+            <ActionBarItem
+              className="text-destructive focus:text-destructive"
+              onSelect={() => handleBulkAction('delete')}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Hapus
+            </ActionBarItem>
+          </ActionBarGroup>
+          <ActionBarClose>
+            <X className="h-4 w-4" />
+          </ActionBarClose>
+        </ActionBar>
+      )}
+
+      {/* Details Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           {selectedFeedback && (
             <>
-              <DrawerHeader>
-                <DrawerTitle>Detail Feedback</DrawerTitle>
-              </DrawerHeader>
-              <div className="p-6 space-y-6">
+              <DialogHeader>
+                <DialogTitle>Detail Feedback</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
                 {/* Rating */}
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">
@@ -550,7 +911,8 @@ export function FeedbackInboxClient({
                       }
                       className="capitalize"
                     >
-                      {statusLabels[selectedFeedback.status] || selectedFeedback.status}
+                      {statusLabels[selectedFeedback.status] ||
+                        selectedFeedback.status}
                     </Badge>
                   </div>
                 </div>
@@ -562,10 +924,10 @@ export function FeedbackInboxClient({
                     Diterima
                   </span>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(selectedFeedback.createdAt), {
-                      addSuffix: true,
-                      locale: id,
-                    })}
+                    {formatDistanceToNow(
+                      new Date(selectedFeedback.createdAt),
+                      { addSuffix: true, locale: id }
+                    )}
                   </p>
                 </div>
 
@@ -576,7 +938,7 @@ export function FeedbackInboxClient({
                       size="sm"
                       onClick={() => {
                         handleStatusChange(selectedFeedback, 'read')
-                        setIsDrawerOpen(false)
+                        setIsDialogOpen(false)
                       }}
                     >
                       <Check className="mr-2 h-4 w-4" />
@@ -588,7 +950,7 @@ export function FeedbackInboxClient({
                     variant="outline"
                     onClick={() => {
                       handleStatusChange(selectedFeedback, 'archived')
-                      setIsDrawerOpen(false)
+                      setIsDialogOpen(false)
                     }}
                   >
                     <Archive className="mr-2 h-4 w-4" />
@@ -599,7 +961,7 @@ export function FeedbackInboxClient({
                     variant="destructive"
                     onClick={() => {
                       handleDelete(selectedFeedback)
-                      setIsDrawerOpen(false)
+                      setIsDialogOpen(false)
                     }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -609,8 +971,8 @@ export function FeedbackInboxClient({
               </div>
             </>
           )}
-        </DrawerContent>
-      </Drawer>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

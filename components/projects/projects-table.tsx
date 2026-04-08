@@ -41,7 +41,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground mb-4">No projects yet</p>
+        <p className="text-muted-foreground mb-4">Belum ada proyek</p>
         <CreateProjectDialog />
       </div>
     )
@@ -52,10 +52,12 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nama Project</TableHead>
+            <TableHead>Nama Proyek</TableHead>
             <TableHead className="hidden md:table-cell">Slug</TableHead>
             <TableHead className="hidden sm:table-cell">Feedback</TableHead>
-            <TableHead className="hidden sm:table-cell">Rating Rata-rata</TableHead>
+            <TableHead className="hidden sm:table-cell">
+              Rating Rata-rata
+            </TableHead>
             <TableHead className="hidden lg:table-cell">Dibuat</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
@@ -72,7 +74,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                 </Link>
                 <div className="flex items-center gap-2 md:hidden mt-1">
                   <Badge variant="outline" className="text-xs">
-                    {project.feedbackCount} feedbacks
+                    {project.feedbackCount} feedback
                   </Badge>
                   {project.avgRating && (
                     <Badge variant="outline" className="text-xs">
@@ -99,7 +101,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                     </span>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground text-sm">No data</span>
+                  <span className="text-muted-foreground text-sm">Tidak ada data</span>
                 )}
               </TableCell>
               <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
@@ -115,10 +117,10 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/projects/${project.id}`}>Open</Link>
+                      <Link href={`/projects/${project.id}`}>Buka</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href={`/projects/${project.id}/builder`}>
@@ -132,7 +134,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href={`/projects/${project.id}/install`}>
-                        Install
+                        Pasang
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -143,7 +145,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                         rel="noopener noreferrer"
                       >
                         <ExternalLink className="mr-2 h-4 w-4" />
-                        Public Link
+                        Tautan Publik
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

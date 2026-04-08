@@ -109,7 +109,7 @@ export default function RegisterPage() {
         <div className="mb-6">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>Kesalahan</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>

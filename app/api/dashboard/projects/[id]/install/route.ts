@@ -46,8 +46,15 @@ export async function GET(
 
     const projectData = project[0]
 
-    // Generate script snippet
-    const scriptSnippet = `<script src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/widget.js" data-project-id="${projectData.id}"></script>`
+    // Generate script snippet (self-hosted widget)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const scriptSnippet = `<script src="${appUrl}/widget/widget.js" data-project-id="${projectData.id}"></script>
+<script>
+  FeedbackWidget.init({
+    projectId: "${projectData.id}",
+    apiEndpoint: "${appUrl}"
+  })
+</script>`
 
     // Generate public link
     const publicLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/s/${projectData.slug}`
@@ -62,6 +69,7 @@ export async function GET(
         qr_code_url: qrCodeUrl,
         project_id: projectData.id,
         project_name: projectData.name,
+        app_url: appUrl,
       },
     })
   } catch (error) {

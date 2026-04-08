@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Trash2, Plus, X, Save } from 'lucide-react'
+import { Trash2, Plus, X, Save, Bell, Sparkles, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -247,25 +247,74 @@ export function ProjectSettings({ projectId }: ProjectSettingsProps) {
         </CardContent>
       </Card>
 
-      {/* Webhooks - Pro Feature */}
+      {/* Webhooks - Coming Soon */}
       <Card>
         <CardHeader>
-          <CardTitle>Webhooks</CardTitle>
-          <CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Webhooks
             <Badge variant="secondary" className="ml-2">
-              Pro Feature
+              Coming Soon
             </Badge>
+          </CardTitle>
+          <CardDescription>
+            Kirim notifikasi real-time ke sistem lain saat feedback diterima
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted/50 rounded-lg p-6 text-center">
-            <p className="text-sm text-muted-foreground mb-4">
-              Get real-time notifications when feedback is received. Upgrade to
-              Pro to enable webhooks.
-            </p>
-            <Button variant="outline" disabled>
-              Upgrade to Pro
-            </Button>
+          <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 rounded-lg p-6 space-y-4">
+            {/* Feature Preview */}
+            <div className="flex items-start gap-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-medium mb-1">Integrasi Webhook</h4>
+                <p className="text-sm text-muted-foreground">
+                  Terima notifikasi ke Slack, Discord, atau sistem custom Anda
+                  setiap kali ada feedback baru.
+                </p>
+              </div>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Filter berdasarkan rating dan tags</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Retry otomatis jika endpoint gagal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Log riwayat pengiriman webhook</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Signature verification untuk security</span>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  // Open mailto for feature request
+                  const subject = encodeURIComponent('Request Fitur Webhook - Echo')
+                  const body = encodeURIComponent(
+                    'Halo Tim Echo,\n\nSaya tertarik dengan fitur Webhook untuk integrasi feedback. Mohon informasikan kapan fitur ini akan tersedia.\n\nTerima kasih!'
+                  )
+                  window.open(`mailto:support@echo.com?subject=${subject}&body=${body}`)
+                }}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Request Fitur Ini
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

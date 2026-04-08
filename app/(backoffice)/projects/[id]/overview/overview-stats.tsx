@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { MessageSquare, Star, TrendingUp, Users } from 'lucide-react'
+import { MessageSquare, Star, TrendingUp, Users, BarChart3 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 interface OverviewStatsProps {
   projectId: string
+  projectName?: string
 }
 
 interface StatsData {
@@ -22,7 +23,7 @@ interface StatsData {
   }>
 }
 
-export function OverviewStats({ projectId }: OverviewStatsProps) {
+export function OverviewStats({ projectId, projectName }: OverviewStatsProps) {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -92,7 +93,9 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
               style={{ width: `${Math.min(totalFeedback / 10, 100)}%` }}
             />
           </div>
-          <span className="text-muted-foreground text-xs">30 hari terakhir</span>
+          <span className="text-muted-foreground text-xs">
+            30 hari terakhir
+          </span>
         </div>
       </div>
 
@@ -206,36 +209,56 @@ export function OverviewStats({ projectId }: OverviewStatsProps) {
         </div>
       </div>
 
-      {/* Trend/Change */}
+      {/* Feedback Velocity - Feedbacks per day */}
       <div className="bg-card rounded-xl border p-6 group hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
           <span className="text-muted-foreground text-sm font-medium">
-            Tingkat Respon
+            Rata-rata per Hari
           </span>
-          <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
-            <Users className="h-5 w-5 text-secondary" />
+          <div className="h-10 w-10 rounded-xl bg-purple-100 dark:bg-purple-950 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900 transition-colors">
+            <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-500" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold tracking-tight tabular-nums">
-            {totalFeedback > 0
-              ? Math.round(
-                  (totalFeedback / Math.max(totalFeedback * 2, 1)) * 100
-                )
-              : 0}
-            %
+            {(() => {
+              // Calculate average feedbacks per day from chart data
+              const daysWithData = stats?.chart_data?.length || 0
+              if (daysWithData === 0) return '0'
+              const totalFromChart = stats?.chart_data?.reduce((sum, day) => sum + day.count, 0) || 0
+              const velocity = totalFromChart / daysWithData
+              return velocity.toFixed(1)
+            })()}
           </span>
+          <span className="text-muted-foreground text-xs">feedback/hari</span>
         </div>
         <div className="mt-3 flex items-center gap-2">
           <span className="text-muted-foreground text-xs">
-            Target: 100 respon
+            {(() => {
+              // Calculate trend based on last 7 days vs previous days
+              const chartData = stats?.chart_data || []
+              if (chartData.length < 14) return 'Data belum cukup'
+
+              const last7Days = chartData.slice(-7).reduce((sum, day) => sum + day.count, 0)
+              const prev7Days = chartData.slice(-14, -7).reduce((sum, day) => sum + day.count, 0)
+              const trend = prev7Days > 0 ? ((last7Days - prev7Days) / prev7Days) * 100 : 0
+
+              if (trend > 10) return `↑ ${trend.toFixed(0)}% dari minggu lalu`
+              if (trend < -10) return `↓ ${Math.abs(trend).toFixed(0)}% dari minggu lalu`
+              return 'Stabil dari minggu lalu'
+            })()}
           </span>
         </div>
         <div className="mt-2">
           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-secondary transition-all duration-500"
-              style={{ width: `${Math.min(totalFeedback, 100)}%` }}
+              className="h-full rounded-full bg-purple-500 transition-all duration-500"
+              style={{
+                width: `${Math.min(
+                  ((stats?.chart_data?.length || 0) / 30) * 100,
+                  100
+                )}%`
+              }}
             />
           </div>
         </div>

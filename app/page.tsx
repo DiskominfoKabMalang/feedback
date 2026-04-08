@@ -9,7 +9,9 @@ export default function Home() {
         <div className="container flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
-              <span className="text-primary-foreground text-lg font-bold">E</span>
+              <span className="text-primary-foreground text-lg font-bold">
+                E
+              </span>
             </div>
             <span className="text-foreground text-xl font-bold">Echo</span>
           </Link>
@@ -36,12 +38,16 @@ export default function Home() {
               <span className="bg-green-500 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
               <span className="bg-green-500 relative inline-flex h-2 w-2 rounded-full" />
             </span>
-            <span className="text-muted-foreground">Sekarang dalam beta publik</span>
+            <span className="text-muted-foreground">
+              Sekarang dalam beta publik
+            </span>
           </div>
 
           {/* Headline */}
           <h1 className="text-balance bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
-            Kumpulkan feedback<br />yang penting
+            Kumpulkan feedback
+            <br />
+            yang penting
           </h1>
 
           {/* Subheadline */}
@@ -56,7 +62,12 @@ export default function Home() {
             <Button size="lg" className="h-12 px-8 text-base" asChild>
               <Link href="/register">Mulai kumpulkan feedback</Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 px-8 text-base"
+              asChild
+            >
               <Link href="/login">Masuk</Link>
             </Button>
           </div>
@@ -73,10 +84,16 @@ export default function Home() {
         <div className="container flex items-center justify-between px-6 text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Echo. Hak cipta dilindungi.</p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
+            <Link
+              href="/privacy"
+              className="hover:text-foreground transition-colors"
+            >
               Privasi
             </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
+            <Link
+              href="/terms"
+              className="hover:text-foreground transition-colors"
+            >
               Syarat & Ketentuan
             </Link>
           </div>

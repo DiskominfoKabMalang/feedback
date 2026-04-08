@@ -82,7 +82,6 @@ export function DataTable<TData, TValue>({
         pageSize: 10,
       },
     },
-    autoResetPageIndex: false,
   })
 
   return (

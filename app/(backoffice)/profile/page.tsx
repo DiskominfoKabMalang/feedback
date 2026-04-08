@@ -103,7 +103,7 @@ export default function ProfilePage() {
       })
     } catch (error) {
       console.error('Error fetching profile:', error)
-      toast.error('Gagal memuat profile')
+      toast.error('Gagal memuat profil')
     } finally {
       setIsLoading(false)
     }
@@ -131,11 +131,11 @@ export default function ProfilePage() {
 
       const data = await response.json()
       setProfile(data.user)
-      toast.success('Profile berhasil diupdate!')
+      toast.success('Profil berhasil diperbarui!')
     } catch (error) {
       console.error('Error updating profile:', error)
       toast.error(
-        error instanceof Error ? error.message : 'Gagal mengupdate profile'
+        error instanceof Error ? error.message : 'Gagal memperbarui profil'
       )
     } finally {
       setIsSaving(false)
@@ -168,7 +168,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Profil</h1>
         <p className="text-muted-foreground">
           Kelola informasi profil dan data pribadi Anda
         </p>

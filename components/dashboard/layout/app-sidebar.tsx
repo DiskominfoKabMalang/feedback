@@ -67,24 +67,24 @@ const navMainItems = [
       },
     ],
   },
-  {
-    title: 'Pengaturan',
-    url: '#',
-    icon: Settings2,
-    requiredPermission: 'settings.manage',
-    items: [
-      {
-        title: 'Umum',
-        url: '/settings',
-        requiredPermission: 'settings.manage',
-      },
-      {
-        title: 'Keamanan',
-        url: '/settings/security',
-        requiredPermission: 'settings.security',
-      },
-    ],
-  },
+  // {
+  //   title: 'Pengaturan',
+  //   url: '#',
+  //   icon: Settings2,
+  //   requiredPermission: 'settings.manage',
+  //   items: [
+  //     {
+  //       title: 'Umum',
+  //       url: '/settings',
+  //       requiredPermission: 'settings.manage',
+  //     },
+  //     {
+  //       title: 'Keamanan',
+  //       url: '/settings/security',
+  //       requiredPermission: 'settings.security',
+  //     },
+  //   ],
+  // },
 ]
 
 const navSecondaryItems = [

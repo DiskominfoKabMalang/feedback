@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { projects, feedbacks } from '@/db/schema'
-import { eq, and, sql, gte } from 'drizzle-orm'
+import { eq, and, sql, gte, desc } from 'drizzle-orm'
 import { requireAuth } from '@/lib/api/auth'
 
 /**
@@ -11,11 +11,13 @@ import { requireAuth } from '@/lib/api/auth'
  *
  * Query Params:
  * - range: 7d, 30d, this_month (default: 30d)
+ * - recent_limit: Number of recent feedbacks to include (default: 5)
  *
  * Returns:
  * - Summary: total_feedback, average_rating, nps_score
  * - Chart data: daily average ratings and counts
  * - Top tags: most frequently used tags
+ * - Recent feedbacks: latest feedback entries
  *
  * Protected: Requires authentication
  */
@@ -35,6 +37,7 @@ export async function GET(
   try {
     const searchParams = request.nextUrl.searchParams
     const range = searchParams.get('range') || '30d'
+    const recentLimit = Math.min(50, parseInt(searchParams.get('recent_limit') || '5'))
 
     // Verify ownership
     const existingProject = await db
@@ -162,6 +165,21 @@ export async function GET(
       .sort((a, b) => b.count - a.count)
       .slice(0, 10)
 
+    // Get recent feedbacks
+    const recentFeedbacks = await db
+      .select({
+        id: feedbacks.id,
+        rating: feedbacks.rating,
+        status: feedbacks.status,
+        answers: feedbacks.answers,
+        meta: feedbacks.meta,
+        createdAt: feedbacks.createdAt,
+      })
+      .from(feedbacks)
+      .where(eq(feedbacks.projectId, projectId))
+      .orderBy(desc(feedbacks.createdAt))
+      .limit(recentLimit)
+
     return NextResponse.json({
       summary: {
         ...summary,
@@ -173,6 +191,7 @@ export async function GET(
         count: Number(item.count),
       })),
       top_tags: topTags,
+      recent_feedbacks: recentFeedbacks,
     })
   } catch (error) {
     console.error('[Project Stats API] Error:', error)

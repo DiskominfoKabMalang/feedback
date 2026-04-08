@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Layout, Settings, Code, Download } from 'lucide-react'
+import { MessageSquare, Layout, Code, Download, BarChart3, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const tabs = [
@@ -19,6 +19,13 @@ const tabs = [
     href: 'inbox',
     icon: MessageSquare,
     description: 'Lihat dan kelola feedback',
+  },
+  {
+    value: 'analytics',
+    label: 'Analisis',
+    href: 'analytics',
+    icon: BarChart3,
+    description: 'Demografi dan korelasi',
   },
   {
     value: 'builder',
@@ -51,7 +58,7 @@ export function ProjectTabs({ projectId }: ProjectTabsProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="grid gap-1 md:grid-cols-5">
+    <nav className="grid gap-1 md:grid-cols-6">
       {tabs.map((tab) => {
         const href = `/projects/${projectId}/${tab.href}`
         const isActive =
@@ -63,10 +70,9 @@ export function ProjectTabs({ projectId }: ProjectTabsProps) {
             href={href}
             className={cn(
               'group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200',
-              'hover:bg-accent/50 hover:border-accent',
               isActive
-                ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                : 'bg-card border-border hover:shadow-sm'
+                ? 'bg-primary text-primary-foreground border-primary shadow-md hover:bg-primary/90 hover:border-primary/90'
+                : 'bg-card border-border hover:bg-accent/50 hover:border-accent hover:shadow-sm'
             )}
           >
             <tab.icon

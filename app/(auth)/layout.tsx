@@ -86,9 +86,7 @@ export default function AuthLayout({
 
           <div className="mt-10 rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
             <p className="mb-1 text-xs text-white/70">Dipercaya oleh</p>
-            <p className="text-2xl font-bold xl:text-3xl">
-              1000+ Tim & Bisnis
-            </p>
+            <p className="text-2xl font-bold xl:text-3xl">1000+ Tim & Bisnis</p>
           </div>
         </div>
       </div>

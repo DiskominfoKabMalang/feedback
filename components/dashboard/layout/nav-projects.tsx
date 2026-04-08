@@ -1,6 +1,6 @@
 'use client'
 
-import { Folder, MoreHorizontal, Settings, Share2 } from 'lucide-react'
+import { Folder, MoreHorizontal, Share2 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 
@@ -83,7 +83,7 @@ export function NavProjects({
                       <span>Instalasi</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {/* <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link
                       href={`${item.url}/settings`}
@@ -92,7 +92,7 @@ export function NavProjects({
                       <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
                       <span>Pengaturan</span>
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>

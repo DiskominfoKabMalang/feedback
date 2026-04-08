@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   Save,
   RefreshCw,
@@ -294,6 +294,12 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
   const [addRuleOpen, setAddRuleOpen] = useState(false)
   const [newRuleRatings, setNewRuleRatings] = useState<number[]>([])
 
+  // Ref to always have access to latest config without triggering re-renders
+  const configRef = useRef(config)
+  useEffect(() => {
+    configRef.current = config
+  }, [config])
+
   // Load existing config
   useEffect(() => {
     fetch(`/api/dashboard/projects/${projectId}`)
@@ -482,69 +488,200 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
 
   // Update demographics step (internal, no toast)
   const updateDemographicsStep = (updates: Partial<DemographicsStepConfig>) => {
-    setConfig((prev) => ({
-      ...prev,
-      flow: {
-        rating_step: prev.flow?.rating_step ?? {
-          enabled: true,
-          type: 'emoji',
-          scale: 5,
-          title: 'Rate us',
+    setConfig((prev) => {
+      const currentDemo = prev.flow?.demographics_step ?? {
+        enabled: false,
+        required: false,
+        title: 'Informasi Tambahan',
+        fields: [],
+      }
+      return {
+        ...prev,
+        flow: {
+          rating_step: prev.flow?.rating_step ?? {
+            enabled: true,
+            type: 'emoji',
+            scale: 5,
+            title: 'Rate us',
+          },
+          feedback_step: prev.flow?.feedback_step ?? {
+            enabled: true,
+            logic_rules: [],
+          },
+          demographics_step: {
+            ...currentDemo,
+            ...updates,
+          },
+          success_step: prev.flow?.success_step ?? {
+            enabled: true,
+            title: 'Terima kasih!',
+            message: 'Masukan Anda membantu kami menjadi lebih baik.',
+            auto_close_seconds: 5,
+            show_cta: false,
+          },
         },
-        feedback_step: prev.flow?.feedback_step ?? {
-          enabled: true,
-          logic_rules: [],
-        },
-        demographics_step: {
-          ...(prev.flow?.demographics_step ?? {
-            enabled: false,
-            required: false,
-            title: 'Informasi Tambahan',
-            fields: [],
-          }),
-          ...updates,
-        },
-        success_step: prev.flow?.success_step ?? {
-          enabled: true,
-          title: 'Terima kasih!',
-          message: 'Masukan Anda membantu kami menjadi lebih baik.',
-          auto_close_seconds: 5,
-          show_cta: false,
-        },
-      },
-    }))
+      }
+    })
   }
 
   // Add demographic field
   const addDemographicField = () => {
-    const fields = [...(config.flow?.demographics_step?.fields || [])]
-    fields.push({
-      key: `field_${Date.now()}`,
-      label: 'Field Baru',
-      type: 'select',
-      options: ['Opsi 1', 'Opsi 2'],
-      required: false,
+    setConfig((prev) => {
+      const currentFields = prev.flow?.demographics_step?.fields || []
+      const stableId = `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const newField = {
+        key: stableId,
+        label: 'Field Baru',
+        type: 'select' as const,
+        options: ['Opsi 1', 'Opsi 2'],
+        required: false,
+      }
+
+      const currentDemo = prev.flow?.demographics_step ?? {
+        enabled: false,
+        required: false,
+        title: 'Informasi Tambahan',
+        fields: [],
+      }
+
+      return {
+        ...prev,
+        flow: {
+          rating_step: prev.flow?.rating_step ?? {
+            enabled: true,
+            type: 'emoji',
+            scale: 5,
+            title: 'Rate us',
+          },
+          feedback_step: prev.flow?.feedback_step ?? {
+            enabled: true,
+            logic_rules: [],
+          },
+          demographics_step: {
+            ...currentDemo,
+            fields: [...currentFields, newField],
+          },
+          success_step: prev.flow?.success_step ?? {
+            enabled: true,
+            title: 'Terima kasih!',
+            message: 'Masukan Anda membantu kami menjadi lebih baik.',
+            auto_close_seconds: 5,
+            show_cta: false,
+          },
+        },
+      }
     })
-    updateDemographicsStep({ fields })
     toast.success('Field demografi ditambahkan')
   }
 
-  // Update demographic field
-  const updateDemographicField = (
-    index: number,
-    updates: Partial<DemographicField>
-  ) => {
-    const fields = [...(config.flow?.demographics_step?.fields || [])]
-    fields[index] = { ...fields[index], ...updates }
-    updateDemographicsStep({ fields })
-  }
+  // Update demographic field - using useCallback with ref to prevent re-renders
+  const updateDemographicField = useCallback(
+    (index: number, updates: Partial<DemographicField>) => {
+      setConfig((prev) => {
+        const currentFields = prev.flow?.demographics_step?.fields || []
+        const newFields = [...currentFields]
+        newFields[index] = { ...newFields[index], ...updates }
 
-  // Remove demographic field
-  const removeDemographicField = (index: number) => {
-    const fields = [...(config.flow?.demographics_step?.fields || [])]
-    fields.splice(index, 1)
-    updateDemographicsStep({ fields })
-    toast.success('Field demografi dihapus')
+        const currentDemo = prev.flow?.demographics_step ?? {
+          enabled: false,
+          required: false,
+          title: 'Informasi Tambahan',
+          fields: [],
+        }
+
+        return {
+          ...prev,
+          flow: {
+            rating_step: prev.flow?.rating_step ?? {
+              enabled: true,
+              type: 'emoji',
+              scale: 5,
+              title: 'Rate us',
+            },
+            feedback_step: prev.flow?.feedback_step ?? {
+              enabled: true,
+              logic_rules: [],
+            },
+            demographics_step: {
+              ...currentDemo,
+              fields: newFields,
+            },
+            success_step: prev.flow?.success_step ?? {
+              enabled: true,
+              title: 'Terima kasih!',
+              message: 'Masukan Anda membantu kami menjadi lebih baik.',
+              auto_close_seconds: 5,
+              show_cta: false,
+            },
+          },
+        }
+      })
+    },
+    []
+  )
+
+  // Remove demographic field - using useCallback to prevent re-renders
+  const removeDemographicField = useCallback(
+    (index: number) => {
+      setConfig((prev) => {
+        const currentFields = prev.flow?.demographics_step?.fields || []
+        const newFields = currentFields.filter((_, i) => i !== index)
+
+        const currentDemo = prev.flow?.demographics_step ?? {
+          enabled: false,
+          required: false,
+          title: 'Informasi Tambahan',
+          fields: [],
+        }
+
+        return {
+          ...prev,
+          flow: {
+            rating_step: prev.flow?.rating_step ?? {
+              enabled: true,
+              type: 'emoji',
+              scale: 5,
+              title: 'Rate us',
+            },
+            feedback_step: prev.flow?.feedback_step ?? {
+              enabled: true,
+              logic_rules: [],
+            },
+            demographics_step: {
+              ...currentDemo,
+              fields: newFields,
+            },
+            success_step: prev.flow?.success_step ?? {
+              enabled: true,
+              title: 'Terima kasih!',
+              message: 'Masukan Anda membantu kami menjadi lebih baik.',
+              auto_close_seconds: 5,
+              show_cta: false,
+            },
+          },
+        }
+      })
+      toast.success('Field demografi dihapus')
+    },
+    []
+  )
+
+  // Create stable handlers for demographic fields to prevent input losing focus
+  // Using a ref-based approach to avoid re-creating handlers on every config change
+  const handlersRef = useRef<Map<string, {
+    onUpdate: (updates: Partial<DemographicField>) => void
+    onRemove: () => void
+  }>>(new Map())
+
+  const getOrCreateHandler = (fieldKey: string, index: number) => {
+    if (!handlersRef.current.has(fieldKey)) {
+      handlersRef.current.set(fieldKey, {
+        onUpdate: (updates: Partial<DemographicField>) =>
+          updateDemographicField(index, updates),
+        onRemove: () => removeDemographicField(index),
+      })
+    }
+    return handlersRef.current.get(fieldKey)!
   }
 
   // Update success step
@@ -1047,17 +1184,18 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
                   />
                 </div>
 
-                {config.flow?.demographics_step?.fields?.map((field, index) => (
-                  <DemographicFieldEditor
-                    key={field.key}
-                    field={field}
-                    index={index}
-                    onUpdate={(updates) =>
-                      updateDemographicField(index, updates)
-                    }
-                    onRemove={() => removeDemographicField(index)}
-                  />
-                ))}
+                {config.flow?.demographics_step?.fields?.map((field, index) => {
+                  const handler = getOrCreateHandler(field.key, index)
+                  return (
+                    <DemographicFieldEditor
+                      key={field.key}
+                      field={field}
+                      index={index}
+                      onUpdate={handler.onUpdate}
+                      onRemove={handler.onRemove}
+                    />
+                  )
+                })}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1148,7 +1286,10 @@ export function WidgetBuilder({ projectId }: WidgetBuilderProps) {
       <div className="space-y-4">
         <h3 className="font-semibold">Live Preview</h3>
         <div className="border rounded-lg p-6 bg-muted/30">
-          <WidgetPreview config={config} />
+          <WidgetPreview
+            key={`preview-${config.flow?.demographics_step?.enabled}-${config.flow?.demographics_step?.fields?.length || 0}`}
+            config={config}
+          />
         </div>
       </div>
     </div>
@@ -1418,11 +1559,11 @@ function DemographicFieldEditor({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Key</Label>
+                <Label className="text-xs">Key (ID Unik)</Label>
                 <Input
                   value={field.key}
-                  onChange={(e) => onUpdate({ key: e.target.value })}
-                  placeholder="field_key"
+                  readOnly
+                  className="bg-muted text-muted-foreground text-xs"
                 />
               </div>
             </div>
@@ -1454,20 +1595,66 @@ function DemographicFieldEditor({
               field.type === 'chips' ||
               field.type === 'select' ||
               field.type === 'checkbox') && (
-              <div className="space-y-1">
-                <Label className="text-xs">Opsi (pisahkan dengan koma)</Label>
-                <Input
-                  value={field.options?.join(', ') || ''}
-                  onChange={(e) =>
-                    onUpdate({
-                      options: e.target.value
-                        .split(',')
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                  placeholder="Opsi 1, Opsi 2, Opsi 3"
-                />
+              <div className="space-y-2">
+                <Label className="text-xs">Opsi</Label>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {field.options?.map((opt, optIdx) => (
+                    <Badge
+                      key={`${opt}-${optIdx}`}
+                      variant="secondary"
+                      className="gap-1 text-xs"
+                    >
+                      {opt}
+                      <button
+                        type="button"
+                        className="hover:text-destructive ml-1"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          const newOptions = field.options?.filter((_, i) => i !== optIdx) || []
+                          onUpdate({ options: newOptions })
+                        }}
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Tambah opsi baru..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const input = e.currentTarget
+                        const value = input.value.trim()
+                        if (value && !field.options?.includes(value)) {
+                          const newOptions = [...(field.options || []), value]
+                          onUpdate({ options: newOptions })
+                          input.value = ''
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      const input = e.currentTarget.previousElementSibling as HTMLInputElement
+                      const value = input.value.trim()
+                      if (value && !field.options?.includes(value)) {
+                        const newOptions = [...(field.options || []), value]
+                        onUpdate({ options: newOptions })
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    Tambah
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -1510,6 +1697,39 @@ function WidgetPreview({ config }: { config: WidgetConfig }) {
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
+
+  // Track previous fields length to avoid unnecessary resets
+  const prevFieldsLength = useRef(0)
+
+  // Reset preview when demographics config changes
+  useEffect(() => {
+    const currentLength = config.flow?.demographics_step?.fields?.length || 0
+    if (prevFieldsLength.current !== currentLength) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      prevFieldsLength.current = currentLength
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStep('rating')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedRating(null)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedTags([])
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setComment('')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.flow?.demographics_step?.fields?.length])
+
+  // Also reset when enabled toggle changes
+  const prevEnabled = useRef(false)
+  useEffect(() => {
+    const currentEnabled = config.flow?.demographics_step?.enabled || false
+    if (prevEnabled.current !== currentEnabled) {
+      prevEnabled.current = currentEnabled
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStep('rating')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.flow?.demographics_step?.enabled])
 
   const currentRule =
     selectedRating !== null && config.flow?.feedback_step?.logic_rules
@@ -1562,7 +1782,7 @@ function WidgetPreview({ config }: { config: WidgetConfig }) {
       return emojis.map((emoji, i) => (
         <button
           key={i}
-          className="w-12 h-12 text-2xl rounded-lg border-2 hover:scale-110 transition-transform"
+          className="w-12 h-12 text-2xl rounded-lg border-2 hover:scale-110 transition-transform flex items-center justify-center"
           onClick={() => handleRatingClick(i + 1)}
         >
           {emoji}
@@ -1574,7 +1794,7 @@ function WidgetPreview({ config }: { config: WidgetConfig }) {
       return Array.from({ length: ratingScale }, (_, i) => i + 1).map((r) => (
         <button
           key={r}
-          className="w-12 h-12 rounded-full border-2 text-yellow-400 hover:bg-yellow-50 transition-colors"
+          className="w-12 h-12 rounded-full border-2 text-yellow-400 hover:bg-yellow-50 transition-colors flex items-center justify-center"
           onClick={() => handleRatingClick(r)}
         >
           <Star className="h-5 w-5 fill-current" />
@@ -1586,7 +1806,7 @@ function WidgetPreview({ config }: { config: WidgetConfig }) {
     return Array.from({ length: ratingScale }, (_, i) => i + 1).map((r) => (
       <button
         key={r}
-        className="w-12 h-12 rounded-lg border-2 font-bold hover:bg-muted transition-colors"
+        className="w-12 h-12 rounded-lg border-2 font-bold hover:bg-muted transition-colors flex items-center justify-center"
         style={{ borderColor: config.theme?.primary_color || '#6366f1' }}
         onClick={() => handleRatingClick(r)}
       >

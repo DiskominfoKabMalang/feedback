@@ -48,7 +48,7 @@ export function HeaderUser({
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <span className="sr-only">Open user menu</span>
+          <span className="sr-only">Buka menu pengguna</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" sideOffset={8}>
@@ -77,11 +77,11 @@ export function HeaderUser({
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push('/profile')}>
             <User className="mr-2 h-4 w-4" />
-            Profile
+            Profil
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/change-password')}>
             <KeyRound className="mr-2 h-4 w-4" />
-            Change Password
+            Ubah Password
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -95,7 +95,7 @@ export function HeaderUser({
           ) : (
             <LogOut className="mr-2 h-4 w-4" />
           )}
-          {isLoggingOut ? 'Logging out...' : 'Log out'}
+          {isLoggingOut ? 'Keluar...' : 'Keluar'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

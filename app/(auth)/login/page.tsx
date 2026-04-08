@@ -90,7 +90,7 @@ function LoginForm() {
         <div className="mb-6">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>Kesalahan</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>
@@ -286,7 +286,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Memuat...</div>}>
       <LoginForm />
     </Suspense>
   )
